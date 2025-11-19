@@ -50,7 +50,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// Health check endpoint mejorado
+// Health check endpoint
 app.get('/api/health', async (req, res) => {
   try {
     const { getDB } = require('./config/database');
@@ -59,49 +59,17 @@ app.get('/api/health', async (req, res) => {
     // Verificar conexión a la base de datos
     await db.command({ ping: 1 });
     
-    // Obtener estadísticas básicas
-    const collections = await db.listCollections().toArray();
-    const collectionNames = collections.map(col => col.name);
-    
     res.json({ 
-      status: 'OK', 
-      message: 'Sistema de gestión de citas médicas funcionando correctamente',
-      timestamp: new Date().toISOString(),
-      database: {
-        connected: true,
-        collections: collectionNames
-      },
-      system: {
-        nodeVersion: process.version,
-        platform: process.platform,
-        uptime: process.uptime()
-      }
+      status: 'OK'
     });
   } catch (error) {
     res.status(503).json({ 
-      status: 'ERROR', 
-      message: 'Problema de conexión con la base de datos',
-      error: error.message 
+      status: 'ERROR'
     });
   }
 });
 
-// Ruta de información del sistema
-app.get('/api/info', (req, res) => {
-  res.json({
-    name: 'Sistema de Gestión de Citas Médicas',
-    version: '1.0.0',
-    description: 'Sistema web para gestión de citas médicas con MongoDB',
-    author: 'Tu Nombre',
-    endpoints: {
-      auth: '/api/auth',
-      patients: '/api/patients',
-      doctors: '/api/doctors',
-      appointments: '/api/appointments',
-      medicalRecords: '/api/medical-records'
-    }
-  });
-});
+
 
 // Middleware para logging de requests
 app.use((req, res, next) => {
@@ -113,17 +81,7 @@ app.use((req, res, next) => {
 app.use('*', (req, res) => {
   res.status(404).json({ 
     success: false,
-    error: 'Ruta no encontrada',
-    path: req.originalUrl,
-    availableEndpoints: [
-      '/api/auth',
-      '/api/patients',
-      '/api/doctors', 
-      '/api/appointments',
-      '/api/medical-records',
-      '/api/health',
-      '/api/info'
-    ]
+    error: 'Ruta no encontrada'
   });
 });
 
