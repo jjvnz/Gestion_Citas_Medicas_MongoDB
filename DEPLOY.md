@@ -36,7 +36,7 @@ Después de crear el servicio, ve a **Environment** y agrega:
 
 ### Variable Requerida:
 ```
-MONGODB_URI = mongodb+srv://tu_usuario:tu_password@cluster.mongodb.net/gestion_citas_medicas?retryWrites=true&w=majority
+MONGODB_URI = mongodb+srv://<USERNAME>:<PASSWORD>@<CLUSTER>.mongodb.net/gestion_citas_medicas?retryWrites=true&w=majority
 ```
 
 ### Variables Opcionales:
@@ -46,7 +46,7 @@ PORT = 3000
 ```
 
 ⚠️ **IMPORTANTE**: 
-- Reemplaza `tu_usuario` y `tu_password` con tus credenciales de MongoDB Atlas
+- Reemplaza `<USERNAME>`, `<PASSWORD>` y `<CLUSTER>` con tus credenciales reales de MongoDB Atlas
 - El nombre de la base de datos debe coincidir con el que usas en Atlas
 
 ## 📝 Pasos Completos
