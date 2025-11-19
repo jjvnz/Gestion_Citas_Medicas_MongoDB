@@ -15,6 +15,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../frontend')));
 app.use(passport.initialize());
 
+// Middleware para deshabilitar caché en endpoints de API
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+
 // Conectar a la base de datos
 connectDB().then(() => {
   console.log('✅ Base de datos MongoDB conectada');

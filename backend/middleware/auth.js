@@ -13,10 +13,17 @@ const authenticateJWT = (req, res, next) => {
     }
     
     if (!user) {
+      // Verificar si hay token en el header
+      const authHeader = req.headers.authorization;
+      const errorMessage = !authHeader 
+        ? 'No se proporcionó token de autenticación. Por favor incluye el header: Authorization: Bearer <token>'
+        : 'Token inválido o expirado';
+      
       return res.status(401).json({ 
         success: false, 
         error: 'No autorizado',
-        message: 'Token inválido o expirado' 
+        message: errorMessage,
+        hint: 'Este endpoint requiere autenticación. Use /api/auth/login para obtener un token.'
       });
     }
     
