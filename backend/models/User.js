@@ -34,7 +34,7 @@ class User {
       username: userData.username,
       email: userData.email,
       password: hashedPassword,
-      role: userData.role || 'user', // 'admin', 'doctor', 'user'
+      role: userData.role || 'receptionist', // 'admin', 'doctor', 'receptionist'
       profile: {
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',

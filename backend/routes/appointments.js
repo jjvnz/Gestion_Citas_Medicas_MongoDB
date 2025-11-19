@@ -9,8 +9,25 @@ const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 router.get('/', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
+    let query = {};
+    
+    // Doctor solo ve sus propias citas
+    if (req.user.role === 'doctor') {
+      const normalizedEmail = req.user.email.trim().toLowerCase();
+      const doctor = await db.collection('doctors').findOne({
+        'contact.email': { $regex: `^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+      });
+      
+      if (!doctor) {
+        return res.status(404).json({ error: 'Doctor profile not found' });
+      }
+      
+      query.doctorId = doctor._id;
+    }
+    // Admin y receptionist ven todas las citas
+    
     const appointments = await db.collection('appointments')
-      .find()
+      .find(query)
       .sort({ dateTime: 1 })
       .toArray();
     
@@ -59,7 +76,7 @@ router.get('/doctor/:doctorId', authenticateJWT, async (req, res) => {
 });
 
 // POST /api/appointments - Crear nueva cita
-router.post('/', authenticateJWT, async (req, res) => {
+router.post('/', authenticateJWT, authorizeRoles('admin', 'receptionist'), async (req, res) => {
   try {
     const db = getDB();
     const { doctorId, patientId, dateTime, reason } = req.body;
@@ -93,13 +110,67 @@ router.post('/', authenticateJWT, async (req, res) => {
 router.get('/:id', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
-    const appointment = await db.collection('appointments').findOne({
-      _id: new ObjectId(req.params.id)
-    });
+    const appointments = await db.collection('appointments').aggregate([
+      { $match: { _id: new ObjectId(req.params.id) } },
+      {
+        $lookup: {
+          from: 'doctors',
+          localField: 'doctorId',
+          foreignField: '_id',
+          as: 'doctorData'
+        }
+      },
+      {
+        $lookup: {
+          from: 'patients',
+          localField: 'patientId',
+          foreignField: '_id',
+          as: 'patientData'
+        }
+      },
+      {
+        $project: {
+          dateTime: 1,
+          duration: 1,
+          status: 1,
+          reason: 1,
+          doctorId: { $arrayElemAt: ['$doctorData', 0] },
+          patientId: { $arrayElemAt: ['$patientData', 0] },
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]).toArray();
     
-    if (!appointment) {
+    if (!appointments || appointments.length === 0) {
       return res.status(404).json({ error: 'Cita no encontrada' });
     }
+    
+    const appointment = appointments[0];
+    
+    // Doctor solo puede ver sus propias citas
+    if (req.user.role === 'doctor') {
+      const normalizedEmail = req.user.email.trim().toLowerCase();
+      const doctor = await db.collection('doctors').findOne({
+        'contact.email': { $regex: `^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+      });
+      
+      if (!doctor) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Doctor profile not found' 
+        });
+      }
+      
+      if (appointment.doctorId._id.toString() !== doctor._id.toString()) {
+        return res.status(403).json({ 
+          success: false,
+          error: 'Acceso denegado',
+          message: 'No tienes permiso para ver esta cita' 
+        });
+      }
+    }
+    // Admin y receptionist pueden ver cualquier cita
     
     res.json(appointment);
   } catch (error) {
@@ -108,7 +179,7 @@ router.get('/:id', authenticateJWT, async (req, res) => {
 });
 
 // PUT /api/appointments/:id - Actualizar cita completa
-router.put('/:id', authenticateJWT, async (req, res) => {
+router.put('/:id', authenticateJWT, authorizeRoles('admin', 'receptionist'), async (req, res) => {
   try {
     const db = getDB();
     const { doctorId, patientId, dateTime, duration, status, reason } = req.body;
@@ -142,7 +213,8 @@ router.put('/:id', authenticateJWT, async (req, res) => {
 });
 
 // PUT /api/appointments/:id/status - Actualizar estado de cita
-router.put('/:id/status', authenticateJWT, async (req, res) => {
+// Doctor puede completar/cancelar sus citas, receptionist/admin todas
+router.put('/:id/status', authenticateJWT, authorizeRoles('admin', 'receptionist', 'doctor'), async (req, res) => {
   try {
     const db = getDB();
     const { status } = req.body;
@@ -150,6 +222,37 @@ router.put('/:id/status', authenticateJWT, async (req, res) => {
     
     if (!estadosValidos.includes(status)) {
       return res.status(400).json({ error: 'Estado no válido' });
+    }
+    
+    // Si es doctor, verificar que sea su cita
+    if (req.user.role === 'doctor') {
+      const appointment = await db.collection('appointments').findOne({
+        _id: new ObjectId(req.params.id)
+      });
+      
+      if (!appointment) {
+        return res.status(404).json({ error: 'Cita no encontrada' });
+      }
+      
+      const normalizedEmail = req.user.email.trim().toLowerCase();
+      const doctor = await db.collection('doctors').findOne({
+        'contact.email': { $regex: `^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+      });
+      
+      if (!doctor) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Doctor profile not found' 
+        });
+      }
+      
+      if (appointment.doctorId.toString() !== doctor._id.toString()) {
+        return res.status(403).json({ 
+          success: false,
+          error: 'Acceso denegado',
+          message: 'No puedes modificar citas de otros doctores' 
+        });
+      }
     }
     
     const resultado = await db.collection('appointments').updateOne(

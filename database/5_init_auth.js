@@ -34,17 +34,17 @@ async function initializeDatabase() {
       console.log('✅ Usuario doctor creado');
     }
 
-    const existingUser = await User.findByUsername('user1');
-    if (!existingUser) {
+    const existingReceptionist = await User.findByUsername('recepcion');
+    if (!existingReceptionist) {
       await User.create({
-        username: 'user1',
-        email: 'user@medicare.com',
-        password: 'user123',
-        firstName: 'Juan',
-        lastName: 'Pérez',
-        role: 'user'
+        username: 'recepcion',
+        email: 'recepcion@medicare.com',
+        password: 'recepcion123',
+        firstName: 'Laura',
+        lastName: 'Martínez',
+        role: 'receptionist'
       });
-      console.log('✅ Usuario regular creado');
+      console.log('✅ Usuario recepcionista creado');
     }
 
     console.log('✅ Inicialización completada');

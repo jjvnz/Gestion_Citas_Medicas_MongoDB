@@ -28,7 +28,9 @@ db.createCollection("patients", {
         status: { bsonType: "string", enum: ["active", "inactive"] }
       }
     }
-  }
+  },
+  validationLevel: "moderate",
+  validationAction: "warn"
 })
 
 db.createCollection("doctors", {

@@ -28,6 +28,7 @@ async function checkAuthStatus() {
                 const userName = user.profile?.firstName || user.username || 'Usuario';
                 localStorage.setItem('userName', userName);
                 localStorage.setItem('userRole', user.role);
+                localStorage.setItem('userEmail', user.email);
                 showMainApp(userName);
                 return;
             }
@@ -68,6 +69,7 @@ async function handleLogin(e) {
             const userName = user.profile?.firstName || user.username || 'Usuario';
             localStorage.setItem('userName', userName);
             localStorage.setItem('userRole', user.role);
+            localStorage.setItem('userEmail', user.email);
             
             showNotification('¡Bienvenido! Inicio de sesión exitoso', 'success');
             
@@ -182,6 +184,7 @@ function logout() {
             localStorage.removeItem('authToken');
             localStorage.removeItem('userName');
             localStorage.removeItem('userRole');
+            localStorage.removeItem('userEmail');
             
             showNotification('Sesión cerrada exitosamente', 'info');
             

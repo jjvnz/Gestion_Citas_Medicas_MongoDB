@@ -875,6 +875,552 @@ body {
     box-shadow: var(--shadow-md);
 }
 
+/* ========================================
+   HISTORIAL MÉDICO - DISEÑO PREMIUM
+======================================== */
+
+.medical-records-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.patient-selector-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+    transition: var(--transition);
+}
+
+.patient-selector-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.selector-header {
+    background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+    padding: 1.25rem 1.75rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.selector-header i {
+    font-size: 1.75rem;
+    opacity: 0.95;
+}
+
+.selector-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.selector-body {
+    padding: 2rem;
+    background: linear-gradient(to bottom, white 0%, var(--gray-50) 100%);
+}
+
+.select-modern {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    font-size: 1.05rem;
+    border: 2px solid var(--gray-300);
+    border-radius: 12px;
+    background: white;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.select-modern:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+.select-modern:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+    transform: translateY(-1px);
+}
+
+.placeholder-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+    border-radius: var(--radius);
+    border: 2px dashed var(--gray-300);
+}
+
+.placeholder-state i {
+    font-size: 4rem;
+    color: var(--gray-400);
+    margin-bottom: 1rem;
+}
+
+.placeholder-state p {
+    color: var(--gray-600);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #FFF5E1 0%, #FFE4B5 100%);
+    border-radius: 16px;
+    border: 2px solid var(--warning);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.1);
+}
+
+.empty-state i {
+    font-size: 4.5rem;
+    color: var(--warning);
+    margin-bottom: 1.5rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+.empty-state h3 {
+    color: var(--gray-900);
+    margin: 0.75rem 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.empty-state p {
+    color: var(--gray-700);
+    margin-bottom: 2rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.header-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+.header-info i {
+    color: var(--primary);
+}
+
+.records-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.medical-record-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--gray-200);
+}
+
+.medical-record-card:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    transform: translateY(-6px);
+    border-color: var(--primary);
+}
+
+.record-card-header {
+    background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+    padding: 1.5rem 2rem;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.record-card-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-left i {
+    font-size: 2rem;
+    opacity: 0.9;
+}
+
+.record-date {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+}
+
+.record-time {
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
+.header-right {
+    text-align: right;
+}
+
+.record-doctor {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+}
+
+.record-specialty {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    font-style: italic;
+}
+
+.record-card-body {
+    padding: 1.5rem;
+}
+
+.record-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.record-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.record-section h4 {
+    color: var(--gray-800);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.record-section h4 i {
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.record-section p {
+    color: var(--gray-700);
+    line-height: 1.7;
+    margin: 0;
+}
+
+.prescriptions-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.prescriptions-list li {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+    border-radius: 8px;
+    color: var(--gray-800);
+    border-left: 4px solid var(--success);
+    font-weight: 500;
+}
+
+.prescriptions-list li:before {
+    content: "💊 ";
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.prescriptions-list li strong {
+    color: var(--gray-900);
+    font-size: 1.05rem;
+}
+
+.prescriptions-list li small {
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    display: block;
+    margin-top: 0.25rem;
+    font-weight: 400;
+}
+
+.vital-signs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.vital-sign-item {
+    background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+    text-align: center;
+    transition: var(--transition);
+}
+
+.vital-sign-item:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.vital-sign-item i {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.vital-sign-item strong {
+    display: block;
+    color: var(--gray-600);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.vital-sign-item span {
+    display: block;
+    color: var(--gray-900);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.record-card-actions {
+    padding: 1.5rem 2rem;
+    background: linear-gradient(to bottom, var(--gray-50) 0%, var(--gray-100) 100%);
+    display: flex;
+    gap: 1rem;
+    border-top: 2px solid var(--gray-200);
+}
+
+.alert-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    border-left: 4px solid var(--info);
+    border-radius: 10px;
+    color: var(--gray-800);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.alert-info i {
+    color: var(--info);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.alert-info span {
+    font-weight: 500;
+}
+
+.record-card-actions button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.record-card-actions button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.record-card-actions .btn-secondary {
+    background: linear-gradient(135deg, var(--info) 0%, var(--primary) 100%);
+    border: none;
+}
+
+.record-card-actions .btn-secondary:hover {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+}
+
+.record-card-actions .btn-danger:hover {
+    background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+}
+
+.vital-signs-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.vital-signs-inputs input {
+    padding: 0.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+/* ========================================
+   MODAL PARA HISTORIAL MÉDICO
+======================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    animation: fadeInOverlay 0.3s ease forwards;
+}
+
+.modal-content {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-xl);
+    max-width: 700px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scrollbar personalizado para el modal */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content h3 {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    padding: 1.5rem;
+    margin: 0;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-content h3 i {
+    font-size: 1.5rem;
+}
+
+.modal-content form {
+    padding: 1.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-200);
+    margin-top: 1.5rem;
+}
+
+.modal-actions button {
+    min-width: 120px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .record-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .header-right {
+        text-align: left;
+    }
+    
+    .vital-signs-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-actions button {
+        width: 100%;
+    }
+}
+
 .btn-small:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -1075,6 +1621,180 @@ footer {
 }
 
 .confirm-modal-btn i {
+    font-size: 1.1rem;
+}
+
+/* ========================================
+   MODAL DE EDICIÓN
+======================================== */
+
+.edit-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    opacity: 0;
+    animation: fadeInOverlay 0.3s ease forwards;
+}
+
+.edit-modal {
+    background: white;
+    border-radius: 20px;
+    box-shadow: var(--shadow-xl);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.edit-modal-header {
+    padding: 2rem 2rem 1rem;
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.edit-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.edit-modal-title i {
+    color: var(--primary);
+    font-size: 1.75rem;
+}
+
+.edit-modal-body {
+    padding: 2rem;
+}
+
+.edit-modal-body .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.edit-modal-body label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--gray-700);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.edit-modal-body input[type="text"],
+.edit-modal-body input[type="email"],
+.edit-modal-body input[type="tel"],
+.edit-modal-body input[type="datetime-local"],
+.edit-modal-body select,
+.edit-modal-body textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    background: white;
+    color: var(--gray-800);
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.edit-modal-body input[type="text"]:focus,
+.edit-modal-body input[type="email"]:focus,
+.edit-modal-body input[type="tel"]:focus,
+.edit-modal-body input[type="datetime-local"]:focus,
+.edit-modal-body select:focus,
+.edit-modal-body textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.edit-modal-body textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.edit-modal-body .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.edit-modal-body select {
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .edit-modal-body .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .edit-modal {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .edit-modal-actions {
+        flex-direction: column-reverse;
+    }
+    
+    .edit-modal-btn {
+        width: 100%;
+    }
+}
+
+.edit-modal-actions {
+    padding: 1.5rem 2rem 2rem;
+    display: flex;
+    gap: 1rem;
+    border-top: 2px solid var(--gray-100);
+}
+
+.edit-modal-btn {
+    flex: 1;
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.edit-modal-btn-cancel {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.edit-modal-btn-cancel:hover {
+    background: var(--gray-200);
+    transform: translateY(-2px);
+}
+
+.edit-modal-btn-save {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+}
+
+.edit-modal-btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+}
+
+.edit-modal-btn i {
     font-size: 1.1rem;
 }
 
