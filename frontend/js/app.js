@@ -1,6 +1,5 @@
 // Main application logic
-// Configuración global
-const API_BASE_URL = 'http://localhost:3000/api';
+// NOTA: API_BASE_URL se importa desde config.js
 
 // Utilidades
 function showNotification(message, type = 'info') {
