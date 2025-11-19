@@ -4,18 +4,13 @@ const { ObjectId } = require('mongodb');
 const { getDB } = require('../config/database');
 const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 
-// Simple sanitization function to remove potentially dangerous characters
-function sanitizeInput(input) {
+// Validation function to check for dangerous characters
+function validateInput(input) {
   if (typeof input !== 'string') return input;
-  // Remove all HTML tags including malformed ones
-  let sanitized = input;
-  // Remove script tags and their content (handle multiple variations)
-  while (/<script[\s\S]*?<\/script\s*>/gi.test(sanitized)) {
-    sanitized = sanitized.replace(/<script[\s\S]*?<\/script\s*>/gi, '');
-  }
-  // Remove all remaining HTML tags
-  sanitized = sanitized.replace(/<[^>]*>/g, '');
-  return sanitized.trim();
+  // Only allow alphanumeric characters, spaces, hyphens, apostrophes, and periods
+  // This is safe for names, IDs, and phone numbers
+  const cleaned = input.replace(/[^a-zA-Z0-9\s\-'.áéíóúñÁÉÍÓÚÑüÜ]/g, '').trim();
+  return cleaned;
 }
 
 
@@ -108,15 +103,15 @@ router.post('/', authenticateJWT, authorizeRoles('admin', 'receptionist'), async
     // Crear documento completo con valores por defecto
     const nuevoPaciente = {
       personalInfo: {
-        firstName: sanitizeInput(personalInfo.firstName.trim()),
-        lastName: sanitizeInput(personalInfo.lastName.trim()),
+        firstName: validateInput(personalInfo.firstName.trim()),
+        lastName: validateInput(personalInfo.lastName.trim()),
         dateOfBirth: new Date(personalInfo.dateOfBirth),
         gender: personalInfo.gender,
-        nationalId: sanitizeInput(personalInfo.nationalId.trim())
+        nationalId: validateInput(personalInfo.nationalId.trim())
       },
       contact: {
         email: contact.email.trim().toLowerCase(),
-        phone: sanitizeInput(contact.phone.trim()),
+        phone: validateInput(contact.phone.trim()),
         address: contact.address || {
           street: '',
           city: '',
