@@ -258,11 +258,37 @@ async function loadMedicalHistory(patientId) {
         }
         
         container.innerHTML = records.map(record => `
-            <div class="historial-item">
-                <h4>${new Date(record.date).toLocaleDateString('es-ES')}</h4>
-                <p><strong>Diagnóstico:</strong> ${record.diagnosis}</p>
-                ${record.treatment ? `<p><strong>Tratamiento:</strong> ${record.treatment}</p>` : ''}
-                ${record.notes ? `<p><strong>Notas:</strong> ${record.notes}</p>` : ''}
+            <div class="card">
+                <h4>📅 ${new Date(record.date).toLocaleDateString('es-ES', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                })}</h4>
+                ${record.doctorName ? `<p><strong>👨‍⚕️ Doctor:</strong> Dr. ${record.doctorName}</p>` : ''}
+                <p><strong>🩺 Diagnóstico:</strong> ${record.diagnosis}</p>
+                ${record.treatment ? `<p><strong>💊 Tratamiento:</strong> ${record.treatment}</p>` : ''}
+                ${record.prescriptions && record.prescriptions.length > 0 ? `
+                    <div>
+                        <p><strong>📋 Medicamentos:</strong></p>
+                        <ul>
+                            ${record.prescriptions.map(med => `
+                                <li>${typeof med === 'string' ? med : `${med.name || ''} ${med.dosage ? '- ' + med.dosage : ''}`}</li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+                ${record.notes ? `<p><strong>📝 Notas:</strong> ${record.notes}</p>` : ''}
+                ${record.vitalSigns && Object.keys(record.vitalSigns).length > 0 ? `
+                    <div>
+                        <p><strong>💓 Signos Vitales:</strong></p>
+                        <ul>
+                            ${record.vitalSigns.bloodPressure ? `<li>Presión: ${record.vitalSigns.bloodPressure}</li>` : ''}
+                            ${record.vitalSigns.heartRate ? `<li>Frecuencia cardíaca: ${record.vitalSigns.heartRate} bpm</li>` : ''}
+                            ${record.vitalSigns.temperature ? `<li>Temperatura: ${record.vitalSigns.temperature}°C</li>` : ''}
+                            ${record.vitalSigns.weight ? `<li>Peso: ${record.vitalSigns.weight} kg</li>` : ''}
+                        </ul>
+                    </div>
+                ` : ''}
             </div>
         `).join('');
     } catch (error) {
