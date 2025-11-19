@@ -1,7 +1,3 @@
-// Main application logic
-// NOTA: API_BASE_URL se importa desde config.js
-
-// Utilidades
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
@@ -50,11 +46,8 @@ function showSection(sectionId) {
     loadSectionData(sectionId);
 }
 
-// Cargar datos según la sección
 async function loadSectionData(sectionId) {
-    // Verificar autenticación antes de cargar datos
     if (!getAuthToken || !getAuthToken()) {
-        console.warn('No se pueden cargar datos sin autenticación');
         return;
     }
     
@@ -80,11 +73,8 @@ async function loadSectionData(sectionId) {
     }
 }
 
-// Cargar estadísticas del dashboard
 async function loadDashboardStats() {
-    // Verificar que hay token antes de intentar cargar
     if (!getAuthToken || !getAuthToken()) {
-        console.warn('No se puede cargar estadísticas sin autenticación');
         return;
     }
     
@@ -121,8 +111,6 @@ async function loadDashboardStats() {
         document.getElementById('citas-pendientes').textContent = pendingAppointments.length;
         
     } catch (error) {
-        console.error('Error cargando estadísticas:', error);
-        // Mostrar valores por defecto en caso de error
         const totalPacientes = document.getElementById('total-pacientes');
         const totalDoctores = document.getElementById('total-doctores');
         const citasHoy = document.getElementById('citas-hoy');
@@ -132,13 +120,6 @@ async function loadDashboardStats() {
         if (totalDoctores) totalDoctores.textContent = '0';
         if (citasHoy) citasHoy.textContent = '0';
         if (citasPendientes) citasPendientes.textContent = '0';
-        
-        // Solo mostrar notificación si NO es error de autenticación
-        if (!error.message.includes('Sesión expirada') && 
-            !error.message.includes('No autenticado') &&
-            typeof showNotification === 'function') {
-            showNotification('Error cargando estadísticas del dashboard', 'error');
-        }
     }
 }
 
@@ -153,10 +134,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // NO cargar sección inicial aquí - se carga después del login en auth.js
-    // showSection('inicio'); // ❌ REMOVIDO
-    
-    // Configurar formularios
     setupFormHandlers();
 });
 
@@ -215,11 +192,9 @@ async function handleCitaSubmit(e) {
         }
     } catch (error) {
         showNotification('Error de conexión', 'error');
-        console.error('Error:', error);
     }
 }
 
-// Manejador de envío de formulario de pacientes
 async function handlePacienteSubmit(e) {
     e.preventDefault();
     
@@ -237,15 +212,12 @@ async function handlePacienteSubmit(e) {
     };
     
     try {
-        console.log('Enviando datos:', formData); // Debug
-        
         const response = await authenticatedFetch(`${API_BASE_URL}/patients`, {
             method: 'POST',
             body: JSON.stringify(formData)
         });
         
         const result = await response.json();
-        console.log('Respuesta del servidor:', result); // Debug
         
         if (response.ok && result.success) {
             showNotification('Paciente registrado exitosamente', 'success');
@@ -254,15 +226,12 @@ async function handlePacienteSubmit(e) {
         } else {
             const errorMsg = result.error || result.message || 'Error desconocido';
             showNotification('Error al registrar paciente: ' + errorMsg, 'error');
-            console.error('Error del servidor:', errorMsg);
         }
     } catch (error) {
         showNotification('Error de conexión', 'error');
-        console.error('Error:', error);
     }
 }
 
-// Manejador de cambio en selector de historial
 async function handleHistorialChange(e) {
     const patientId = e.target.value;
     if (patientId) {
@@ -271,6 +240,35 @@ async function handleHistorialChange(e) {
         const container = document.getElementById('historial-contenido');
         if (container) {
             container.innerHTML = '<p class="no-data">Seleccione un paciente para ver su historial</p>';
+        }
+    }
+}
+
+async function loadMedicalHistory(patientId) {
+    try {
+        const response = await authenticatedFetch(`${API_BASE_URL}/medical-records/patient/${patientId}`);
+        const records = await response.json();
+        
+        const container = document.getElementById('historial-contenido');
+        if (!container) return;
+        
+        if (!records || records.length === 0) {
+            container.innerHTML = '<p class="no-data">No hay registros médicos para este paciente</p>';
+            return;
+        }
+        
+        container.innerHTML = records.map(record => `
+            <div class="historial-item">
+                <h4>${new Date(record.date).toLocaleDateString('es-ES')}</h4>
+                <p><strong>Diagnóstico:</strong> ${record.diagnosis}</p>
+                ${record.treatment ? `<p><strong>Tratamiento:</strong> ${record.treatment}</p>` : ''}
+                ${record.notes ? `<p><strong>Notas:</strong> ${record.notes}</p>` : ''}
+            </div>
+        `).join('');
+    } catch (error) {
+        const container = document.getElementById('historial-contenido');
+        if (container) {
+            container.innerHTML = '<p class="no-data">Error cargando historial médico</p>';
         }
     }
 }
@@ -290,21 +288,17 @@ async function handleHistorialSubmit(e) {
     };
     
     try {
-        console.log('Enviando registro médico:', formData); // Debug
-        
         const response = await authenticatedFetch(`${API_BASE_URL}/medical-records`, {
             method: 'POST',
             body: JSON.stringify(formData)
         });
         
         const result = await response.json();
-        console.log('Respuesta del servidor:', result); // Debug
         
         if (response.ok && result.success) {
             showNotification('Registro médico creado exitosamente', 'success');
             document.getElementById('historial-form').reset();
             
-            // Si hay un paciente seleccionado en el visor, recargar su historial
             const selectedPatient = document.getElementById('paciente-historial').value;
             if (selectedPatient) {
                 await loadMedicalHistory(selectedPatient);
@@ -312,10 +306,8 @@ async function handleHistorialSubmit(e) {
         } else {
             const errorMsg = result.error || result.message || 'Error desconocido';
             showNotification('Error al crear registro: ' + errorMsg, 'error');
-            console.error('Error del servidor:', errorMsg);
         }
     } catch (error) {
         showNotification('Error de conexión', 'error');
-        console.error('Error:', error);
     }
 }

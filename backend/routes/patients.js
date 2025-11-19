@@ -91,12 +91,10 @@ router.post('/', authenticateJWT, async (req, res) => {
       message: 'Paciente creado exitosamente'
     });
   } catch (error) {
-    console.error('Error creando paciente:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// PUT /api/patients/:id - Actualizar paciente
 router.put('/:id', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();

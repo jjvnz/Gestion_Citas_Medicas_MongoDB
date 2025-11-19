@@ -14,8 +14,7 @@ async function checkAuthStatus() {
     
     if (token) {
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/validate-token`, {
-                method: 'POST',
+            const response = await fetch(`${API_BASE_URL}/auth/me`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -24,27 +23,15 @@ async function checkAuthStatus() {
 
             const data = await response.json();
 
-            if (data.success && data.data.valid) {
-                const userResponse = await fetch(`${API_BASE_URL}/auth/me`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const userData = await userResponse.json();
-
-                if (userData.success) {
-                    const user = userData.data.user;
-                    const userName = user.profile?.firstName || user.username || 'Usuario';
-                    localStorage.setItem('userName', userName);
-                    localStorage.setItem('userRole', user.role);
-                    showMainApp(userName);
-                    return;
-                }
+            if (response.ok && data.success) {
+                const user = data.data.user;
+                const userName = user.profile?.firstName || user.username || 'Usuario';
+                localStorage.setItem('userName', userName);
+                localStorage.setItem('userRole', user.role);
+                showMainApp(userName);
+                return;
             }
-        } catch (error) {
-            console.error('Error validando token:', error);
-        }
+        } catch (error) {}
     }
     
     showLoginScreen();
