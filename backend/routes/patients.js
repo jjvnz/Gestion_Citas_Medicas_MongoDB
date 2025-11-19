@@ -4,6 +4,17 @@ const { ObjectId } = require('mongodb');
 const { getDB } = require('../config/database');
 const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 
+// Simple sanitization function to remove potentially dangerous characters
+function sanitizeInput(input) {
+  if (typeof input !== 'string') return input;
+  // Remove HTML tags and script content
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .trim();
+}
+
+
 // GET /api/patients - Obtener todos los pacientes
 router.get('/', authenticateJWT, async (req, res) => {
   try {
@@ -62,7 +73,8 @@ router.post('/', authenticateJWT, authorizeRoles('admin', 'receptionist'), async
     if (!personalInfo || !personalInfo.gender) {
       errors.push('El género es requerido');
     }
-    if (!contact || !contact.email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(contact.email)) {
+    const email = contact && contact.email ? contact.email.trim() : '';
+    if (!contact || !email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
       errors.push('Email válido es requerido');
     }
     if (!contact || !contact.phone || contact.phone.trim() === '') {
@@ -92,15 +104,15 @@ router.post('/', authenticateJWT, authorizeRoles('admin', 'receptionist'), async
     // Crear documento completo con valores por defecto
     const nuevoPaciente = {
       personalInfo: {
-        firstName: personalInfo.firstName.trim(),
-        lastName: personalInfo.lastName.trim(),
+        firstName: sanitizeInput(personalInfo.firstName.trim()),
+        lastName: sanitizeInput(personalInfo.lastName.trim()),
         dateOfBirth: new Date(personalInfo.dateOfBirth),
         gender: personalInfo.gender,
-        nationalId: personalInfo.nationalId.trim()
+        nationalId: sanitizeInput(personalInfo.nationalId.trim())
       },
       contact: {
-        email: contact.email.trim(),
-        phone: contact.phone.trim(),
+        email: contact.email.trim().toLowerCase(),
+        phone: sanitizeInput(contact.phone.trim()),
         address: contact.address || {
           street: '',
           city: '',
@@ -171,7 +183,8 @@ router.put('/:id', authenticateJWT, authorizeRoles('admin', 'receptionist'), asy
     }
     
     if (contact) {
-      if (contact.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(contact.email)) {
+      const email = contact.email ? contact.email.trim() : '';
+      if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
         errors.push('El email no es válido');
       }
       if (!contact.phone || contact.phone.trim() === '') {

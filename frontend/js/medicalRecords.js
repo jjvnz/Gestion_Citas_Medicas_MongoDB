@@ -423,6 +423,20 @@ function closeModal() {
 async function createMedicalRecord() {
     try {
         const patientId = document.getElementById('paciente-historial').value;
+        const doctorId = document.getElementById('modal-doctor').value;
+        const diagnosis = document.getElementById('modal-diagnosis').value.trim();
+        
+        // Client-side validation
+        if (!doctorId) {
+            showNotification('Por favor seleccione un doctor', 'error');
+            return;
+        }
+        
+        if (!diagnosis) {
+            showNotification('El diagnóstico es requerido', 'error');
+            return;
+        }
+        
         const prescriptionsText = document.getElementById('modal-prescriptions').value.trim();
         
         // Convertir prescripciones de texto a array de strings
@@ -432,9 +446,9 @@ async function createMedicalRecord() {
         
         const data = {
             patientId,
-            doctorId: document.getElementById('modal-doctor').value,
+            doctorId: doctorId,
             date: document.getElementById('modal-date').value,
-            diagnosis: document.getElementById('modal-diagnosis').value.trim(),
+            diagnosis: diagnosis,
             treatment: document.getElementById('modal-treatment').value.trim(),
             prescriptions: prescriptions,
             notes: document.getElementById('modal-notes').value.trim(),

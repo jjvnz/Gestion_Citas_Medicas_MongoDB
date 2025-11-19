@@ -13,12 +13,13 @@ router.get('/', authenticateJWT, async (req, res) => {
     
     // Doctor solo ve sus propias citas
     if (req.user.role === 'doctor') {
+      const normalizedEmail = req.user.email.trim().toLowerCase();
       const doctor = await db.collection('doctors').findOne({
-        'contact.email': req.user.email
+        'contact.email': { $regex: `^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
       });
       
       if (!doctor) {
-        return res.json([]);
+        return res.status(404).json({ error: 'Doctor profile not found' });
       }
       
       query.doctorId = doctor._id;
@@ -149,11 +150,19 @@ router.get('/:id', authenticateJWT, async (req, res) => {
     
     // Doctor solo puede ver sus propias citas
     if (req.user.role === 'doctor') {
+      const normalizedEmail = req.user.email.trim().toLowerCase();
       const doctor = await db.collection('doctors').findOne({
-        'contact.email': req.user.email
+        'contact.email': { $regex: `^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
       });
       
-      if (!doctor || appointment.doctorId._id.toString() !== doctor._id.toString()) {
+      if (!doctor) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Doctor profile not found' 
+        });
+      }
+      
+      if (appointment.doctorId._id.toString() !== doctor._id.toString()) {
         return res.status(403).json({ 
           success: false,
           error: 'Acceso denegado',
@@ -205,7 +214,7 @@ router.put('/:id', authenticateJWT, authorizeRoles('admin', 'receptionist'), asy
 
 // PUT /api/appointments/:id/status - Actualizar estado de cita
 // Doctor puede completar/cancelar sus citas, receptionist/admin todas
-router.put('/:id/status', authenticateJWT, async (req, res) => {
+router.put('/:id/status', authenticateJWT, authorizeRoles('admin', 'receptionist', 'doctor'), async (req, res) => {
   try {
     const db = getDB();
     const { status } = req.body;
@@ -225,11 +234,19 @@ router.put('/:id/status', authenticateJWT, async (req, res) => {
         return res.status(404).json({ error: 'Cita no encontrada' });
       }
       
+      const normalizedEmail = req.user.email.trim().toLowerCase();
       const doctor = await db.collection('doctors').findOne({
-        'contact.email': req.user.email
+        'contact.email': { $regex: `^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
       });
       
-      if (!doctor || appointment.doctorId.toString() !== doctor._id.toString()) {
+      if (!doctor) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Doctor profile not found' 
+        });
+      }
+      
+      if (appointment.doctorId.toString() !== doctor._id.toString()) {
         return res.status(403).json({ 
           success: false,
           error: 'Acceso denegado',

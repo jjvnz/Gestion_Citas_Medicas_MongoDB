@@ -30,12 +30,12 @@ async function loadPatients() {
                         </button>
                         ${userRole === 'admin' ? `
                             ${patient.status === 'active' ? `
-                                <button onclick="deletePatient('${patient._id}', '${escapeHtml(fullName).replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" 
+                                <button onclick="deletePatient('${patient._id}', '${escapeHtml(fullName)}')" 
                                         class="btn-small btn-danger">
                                     <i class="fas fa-trash"></i> Desactivar
                                 </button>
                             ` : `
-                                <button onclick="reactivatePatient('${patient._id}', '${escapeHtml(fullName).replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" 
+                                <button onclick="reactivatePatient('${patient._id}', '${escapeHtml(fullName)}')" 
                                         class="btn-small btn-success">
                                     <i class="fas fa-check-circle"></i> Reactivar
                                 </button>

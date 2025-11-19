@@ -130,7 +130,7 @@ async function loadSectionData(sectionId) {
 }
 
 async function loadDashboardStats() {
-    if (!getAuthToken()) {
+    if (!getAuthToken || !getAuthToken()) {
         return;
     }
     
