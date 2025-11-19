@@ -278,7 +278,7 @@ npm run dev    # Ejecuta con nodemon
 ### Variables de Entorno
 
 ```env
-MONGODB_URI=mongodb+srv://usuario:password@cluster.mongodb.net/gestion_citas_medicas
+MONGODB_URI=mongodb+srv://<USERNAME>:<PASSWORD>@<CLUSTER>.mongodb.net/gestion_citas_medicas
 PORT=3000
 NODE_ENV=development
 ```
