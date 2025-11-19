@@ -20,14 +20,16 @@ router.get('/', authenticateJWT, authorizeRoles('admin', 'doctor'), async (req, 
 });
 
 // GET /api/medical-records/patient/:patientId - Historial por paciente
+// Solo doctor y admin pueden acceder (privacidad médica)
 router.get('/patient/:patientId', authenticateJWT, authorizeRoles('admin', 'doctor'), async (req, res) => {
   try {
     const db = getDB();
+    const requestedPatientId = req.params.patientId;
     
     const medicalRecords = await db.collection('medical_records').aggregate([
       { 
         $match: { 
-          patientId: new ObjectId(req.params.patientId) 
+          patientId: new ObjectId(requestedPatientId) 
         } 
       },
       {

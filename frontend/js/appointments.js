@@ -5,12 +5,13 @@ async function loadAppointments() {
     try {
         const response = await authenticatedFetch(`${API_BASE_URL}/appointments`);
         const appointments = await response.json();
+        const userRole = getUserRole();
         
         const container = document.getElementById('lista-citas');
         if (!container) return;
         
         if (appointments.length === 0) {
-            container.innerHTML = '<p>No hay citas programadas</p>';
+            container.innerHTML = '<p class="no-data">No hay citas programadas</p>';
             return;
         }
         
@@ -20,17 +21,21 @@ async function loadAppointments() {
                 <p><strong>Estado:</strong> <span class="status ${appointment.status}">${getStatusText(appointment.status)}</span></p>
                 <p><strong>Motivo:</strong> ${appointment.reason || 'No especificado'}</p>
                 <p><strong>Duración:</strong> ${appointment.duration} minutos</p>
-                <div class="card-actions">
-                    <button onclick="updateAppointmentStatus('${appointment._id}', 'confirmed')" 
-                            ${appointment.status !== 'scheduled' ? 'disabled' : ''}
-                            class="btn-small btn-success">Confirmar</button>
-                    <button onclick="updateAppointmentStatus('${appointment._id}', 'cancelled')" 
-                            ${['cancelled', 'completed'].includes(appointment.status) ? 'disabled' : ''}
-                            class="btn-small btn-danger">Cancelar</button>
-                    <button onclick="updateAppointmentStatus('${appointment._id}', 'completed')" 
-                            ${appointment.status !== 'confirmed' ? 'disabled' : ''}
-                            class="btn-small btn-primary">Completar</button>
-                </div>
+                ${['receptionist', 'admin', 'doctor'].includes(userRole) ? `
+                    <div class="card-actions">
+                        ${userRole !== 'doctor' ? `
+                            <button onclick="updateAppointmentStatus('${appointment._id}', 'confirmed')" 
+                                    ${appointment.status !== 'scheduled' ? 'disabled' : ''}
+                                    class="btn-small btn-success">Confirmar</button>
+                        ` : ''}
+                        <button onclick="updateAppointmentStatus('${appointment._id}', 'cancelled')" 
+                                ${['cancelled', 'completed'].includes(appointment.status) ? 'disabled' : ''}
+                                class="btn-small btn-danger">Cancelar</button>
+                        <button onclick="updateAppointmentStatus('${appointment._id}', 'completed')" 
+                                ${appointment.status !== 'confirmed' ? 'disabled' : ''}
+                                class="btn-small btn-primary">Completar</button>
+                    </div>
+                ` : ''}
             </div>
         `).join('');
         
@@ -79,6 +84,7 @@ async function loadPatientsForAppointments() {
                         ${patient.personalInfo.nationalId}
                     </option>
                 `).join('');
+        select.disabled = false;
                 
     } catch (error) {
         console.error('Error cargando pacientes:', error);

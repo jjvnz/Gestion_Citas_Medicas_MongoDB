@@ -46,10 +46,16 @@ function showSection(sectionId) {
     loadSectionData(sectionId);
 }
 
+function getUserRole() {
+    return localStorage.getItem('userRole') || 'user';
+}
+
 async function loadSectionData(sectionId) {
     if (!getAuthToken || !getAuthToken()) {
         return;
     }
+    
+    const userRole = getUserRole();
     
     switch(sectionId) {
         case 'inicio':
@@ -59,16 +65,61 @@ async function loadSectionData(sectionId) {
             await loadAppointments();
             await loadDoctorsForAppointments();
             await loadPatientsForAppointments();
+            
+            // Receptionist y admin pueden crear/gestionar citas
+            if (['receptionist', 'admin'].includes(userRole)) {
+                const formSection = document.querySelector('#citas .form-section');
+                if (formSection) formSection.style.display = 'block';
+            } else if (userRole === 'doctor') {
+                // Doctor solo ve y completa citas, no crea
+                const formSection = document.querySelector('#citas .form-section');
+                if (formSection) formSection.style.display = 'none';
+                const listTitle = document.querySelector('#citas .list-section h3');
+                if (listTitle) listTitle.textContent = 'Mis Citas Programadas';
+            }
             break;
         case 'pacientes':
             await loadPatients();
+            
+            // Receptionist y admin pueden crear/editar pacientes
+            if (['receptionist', 'admin'].includes(userRole)) {
+                const formSection = document.querySelector('#pacientes .form-section');
+                if (formSection) formSection.style.display = 'block';
+            } else if (userRole === 'doctor') {
+                // Doctor solo ve pacientes, no crea/edita
+                const formSection = document.querySelector('#pacientes .form-section');
+                if (formSection) formSection.style.display = 'none';
+            }
             break;
         case 'doctores':
             await loadDoctors();
             break;
         case 'historial':
-            await loadPatientsForHistory();
-            await loadDoctorsForHistory();
+            // Solo doctor y admin tienen acceso al historial médico
+            if (['doctor', 'admin'].includes(userRole)) {
+                const formSection = document.querySelector('#historial .form-section');
+                const listSection = document.querySelector('#historial .list-section');
+                if (formSection) formSection.style.display = 'block';
+                if (listSection) {
+                    const selectGroup = listSection.querySelector('.form-group');
+                    if (selectGroup) selectGroup.style.display = 'block';
+                }
+                await loadPatientsForHistory();
+                await loadDoctorsForHistory();
+            } else {
+                // Receptionist no tiene acceso
+                const historialSection = document.getElementById('historial');
+                if (historialSection) {
+                    historialSection.innerHTML = `
+                        <div style="text-align: center; padding: 4rem; background: white; border-radius: 16px; box-shadow: var(--shadow-md);">
+                            <i class="fas fa-lock" style="font-size: 4rem; color: var(--warning); margin-bottom: 1rem;"></i>
+                            <h2 style="color: var(--gray-800); margin-bottom: 1rem;">Acceso Restringido</h2>
+                            <p style="color: var(--gray-600);">El historial médico es información sensible y privada.</p>
+                            <p style="color: var(--gray-600);">Solo doctores y administradores tienen acceso a esta sección.</p>
+                        </div>
+                    `;
+                }
+            }
             break;
     }
 }
@@ -77,6 +128,8 @@ async function loadDashboardStats() {
     if (!getAuthToken || !getAuthToken()) {
         return;
     }
+    
+    const userRole = getUserRole();
     
     try {
         const [patientsRes, doctorsRes, appointmentsRes] = await Promise.all([
@@ -104,11 +157,20 @@ async function loadDashboardStats() {
             ['scheduled', 'confirmed'].includes(apt.status)
         );
         
+        // Estadísticas para todos los roles
         document.getElementById('total-pacientes').textContent = patientsArray.length;
         document.getElementById('total-doctores').textContent = 
             doctorsArray.filter(d => d.status === 'active').length;
         document.getElementById('citas-hoy').textContent = appointmentsToday.length;
         document.getElementById('citas-pendientes').textContent = pendingAppointments.length;
+        
+        // Ajustar textos según rol
+        if (userRole === 'doctor') {
+            const statCard = document.querySelector('.stat-card-warning p');
+            if (statCard) statCard.textContent = 'Mis Citas Hoy';
+            const statCard2 = document.querySelector('.stat-card-info p');
+            if (statCard2) statCard2.textContent = 'Mis Citas Pendientes';
+        }
         
     } catch (error) {
         const totalPacientes = document.getElementById('total-pacientes');
@@ -247,17 +309,54 @@ async function handleHistorialChange(e) {
 async function loadMedicalHistory(patientId) {
     try {
         const response = await authenticatedFetch(`${API_BASE_URL}/medical-records/patient/${patientId}`);
+        
+        // Verificar si la respuesta es exitosa
+        if (!response.ok) {
+            const errorData = await response.json();
+            
+            if (response.status === 403) {
+                const container = document.getElementById('historial-contenido');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="no-data" style="background: #FEF3C7; color: #92400E; padding: 2rem; border-radius: 12px; border-left: 4px solid #F59E0B;">
+                            <i class="fas fa-lock" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <p style="font-weight: 600; margin-bottom: 0.5rem;">Acceso restringido</p>
+                            <p>No tienes permisos para ver el historial médico de este paciente.</p>
+                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Solo usuarios con rol de Doctor o Administrador pueden acceder a esta información.</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            throw new Error(errorData.message || 'Error al cargar historial médico');
+        }
+        
         const records = await response.json();
         
         const container = document.getElementById('historial-contenido');
         if (!container) return;
         
-        if (!records || records.length === 0) {
-            container.innerHTML = '<p class="no-data">No hay registros médicos para este paciente</p>';
+        // Manejar diferentes formatos de respuesta
+        const recordsArray = Array.isArray(records) ? records : 
+                           (records.data && Array.isArray(records.data) ? records.data : []);
+        
+        if (recordsArray.length === 0) {
+            container.innerHTML = `
+                <div class="no-data" style="background: #DBEAFE; color: #1E40AF; padding: 2rem; border-radius: 12px; border-left: 4px solid #3B82F6;">
+                    <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;">Sin registros médicos</p>
+                    <p>Este paciente aún no tiene registros médicos en el sistema.</p>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">
+                        <strong>Nota:</strong> Las citas y los registros médicos son diferentes. 
+                        Usa el formulario superior para crear un nuevo registro médico después de una consulta.
+                    </p>
+                </div>
+            `;
             return;
         }
         
-        container.innerHTML = records.map(record => `
+        container.innerHTML = recordsArray.map(record => `
             <div class="card">
                 <h4>📅 ${new Date(record.date).toLocaleDateString('es-ES', { 
                     year: 'numeric', 
@@ -295,7 +394,13 @@ async function loadMedicalHistory(patientId) {
         console.error('Error cargando historial médico:', error);
         const container = document.getElementById('historial-contenido');
         if (container) {
-            container.innerHTML = '<p class="no-data">Error cargando historial médico</p>';
+            container.innerHTML = `
+                <div class="no-data" style="background: #FEE2E2; color: #991B1B; padding: 2rem; border-radius: 12px; border-left: 4px solid #EF4444;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;">Error al cargar historial médico</p>
+                    <p style="font-size: 0.9rem;">${error.message || 'Ocurrió un error inesperado'}</p>
+                </div>
+            `;
         }
     }
 }

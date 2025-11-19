@@ -8,8 +8,9 @@ const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 router.get('/', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
+    
     const patients = await db.collection('patients')
-      .find()
+      .find({})
       .sort({ 'personalInfo.lastName': 1 })
       .toArray();
     
@@ -38,7 +39,7 @@ router.get('/:id', authenticateJWT, async (req, res) => {
 });
 
 // POST /api/patients - Crear nuevo paciente
-router.post('/', authenticateJWT, async (req, res) => {
+router.post('/', authenticateJWT, authorizeRoles('admin', 'receptionist'), async (req, res) => {
   try {
     const db = getDB();
     const { personalInfo, contact, medicalInfo, emergencyContact } = req.body;
@@ -95,7 +96,7 @@ router.post('/', authenticateJWT, async (req, res) => {
   }
 });
 
-router.put('/:id', authenticateJWT, async (req, res) => {
+router.put('/:id', authenticateJWT, authorizeRoles('admin', 'receptionist'), async (req, res) => {
   try {
     const db = getDB();
     const { personalInfo, contact, medicalInfo, emergencyContact, status } = req.body;
