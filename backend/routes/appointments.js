@@ -3,9 +3,10 @@ const express = require('express');
 const router = express.Router();
 const { ObjectId } = require('mongodb');
 const { getDB } = require('../config/database');
+const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 
 // GET /api/appointments - Obtener todas las citas
-router.get('/', async (req, res) => {
+router.get('/', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const appointments = await db.collection('appointments')
@@ -20,7 +21,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/appointments/doctor/:doctorId - Citas por doctor
-router.get('/doctor/:doctorId', async (req, res) => {
+router.get('/doctor/:doctorId', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const appointments = await db.collection('appointments').aggregate([
@@ -58,7 +59,7 @@ router.get('/doctor/:doctorId', async (req, res) => {
 });
 
 // POST /api/appointments - Crear nueva cita
-router.post('/', async (req, res) => {
+router.post('/', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const { doctorId, patientId, dateTime, reason } = req.body;
@@ -89,7 +90,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/appointments/:id - Obtener cita por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const appointment = await db.collection('appointments').findOne({
@@ -107,7 +108,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/appointments/:id - Actualizar cita completa
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const { doctorId, patientId, dateTime, duration, status, reason } = req.body;
@@ -141,7 +142,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // PUT /api/appointments/:id/status - Actualizar estado de cita
-router.put('/:id/status', async (req, res) => {
+router.put('/:id/status', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const { status } = req.body;
@@ -167,7 +168,7 @@ router.put('/:id/status', async (req, res) => {
 });
 
 // DELETE /api/appointments/:id - Eliminar cita
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateJWT, authorizeRoles('admin', 'doctor'), async (req, res) => {
   try {
     const db = getDB();
     

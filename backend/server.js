@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const { connectDB } = require('./config/database');
+const passport = require('./config/passport');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,6 +13,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../frontend')));
+app.use(passport.initialize());
 
 // Conectar a la base de datos
 connectDB().then(() => {
@@ -22,12 +24,14 @@ connectDB().then(() => {
 });
 
 // Importar rutas
+const authRouter = require('./routes/auth');
 const patientsRouter = require('./routes/patients');
 const doctorsRouter = require('./routes/doctors');
 const appointmentsRouter = require('./routes/appointments');
 const medicalRecordsRouter = require('./routes/medicalRecords');
 
 // Usar rutas
+app.use('/api/auth', authRouter);
 app.use('/api/patients', patientsRouter);
 app.use('/api/doctors', doctorsRouter);
 app.use('/api/appointments', appointmentsRouter);
@@ -82,6 +86,7 @@ app.get('/api/info', (req, res) => {
     description: 'Sistema web para gestión de citas médicas con MongoDB',
     author: 'Tu Nombre',
     endpoints: {
+      auth: '/api/auth',
       patients: '/api/patients',
       doctors: '/api/doctors',
       appointments: '/api/appointments',
@@ -103,6 +108,7 @@ app.use('*', (req, res) => {
     error: 'Ruta no encontrada',
     path: req.originalUrl,
     availableEndpoints: [
+      '/api/auth',
       '/api/patients',
       '/api/doctors', 
       '/api/appointments',
@@ -160,6 +166,7 @@ const server = app.listen(PORT, () => {
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
   console.log(`📋 Información del sistema: http://localhost:${PORT}/api/info`);
   console.log(`🏥 Endpoints disponibles:`);
+  console.log(`   🔐 Autenticación: http://localhost:${PORT}/api/auth`);
   console.log(`   👥 Pacientes: http://localhost:${PORT}/api/patients`);
   console.log(`   🩺 Doctores: http://localhost:${PORT}/api/doctors`);
   console.log(`   📅 Citas: http://localhost:${PORT}/api/appointments`);

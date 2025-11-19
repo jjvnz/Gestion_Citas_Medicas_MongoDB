@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { ObjectId } = require('mongodb');
 const { getDB } = require('../config/database');
+const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 
 // GET /api/medical-records - Obtener todos los registros médicos
-router.get('/', async (req, res) => {
+router.get('/', authenticateJWT, authorizeRoles('admin', 'doctor'), async (req, res) => {
   try {
     const db = getDB();
     const medicalRecords = await db.collection('medical_records')
@@ -19,7 +20,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/medical-records/patient/:patientId - Historial por paciente
-router.get('/patient/:patientId', async (req, res) => {
+router.get('/patient/:patientId', authenticateJWT, authorizeRoles('admin', 'doctor'), async (req, res) => {
   try {
     const db = getDB();
     
@@ -79,7 +80,7 @@ router.get('/patient/:patientId', async (req, res) => {
 });
 
 // POST /api/medical-records - Crear nuevo registro médico
-router.post('/', async (req, res) => {
+router.post('/', authenticateJWT, authorizeRoles('admin', 'doctor'), async (req, res) => {
   try {
     const db = getDB();
     const { patientId, doctorId, date, diagnosis, treatment, prescriptions, notes, vitalSigns } = req.body;
@@ -113,7 +114,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/medical-records/:id - Obtener registro médico por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateJWT, authorizeRoles('admin', 'doctor'), async (req, res) => {
   try {
     const db = getDB();
     
@@ -152,7 +153,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/medical-records/:id - Actualizar registro médico
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateJWT, authorizeRoles('admin', 'doctor'), async (req, res) => {
   try {
     const db = getDB();
     const { diagnosis, treatment, prescriptions, notes, vitalSigns } = req.body;
@@ -185,7 +186,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/medical-records/:id - Eliminar registro médico
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateJWT, authorizeRoles('admin'), async (req, res) => {
   try {
     const db = getDB();
     

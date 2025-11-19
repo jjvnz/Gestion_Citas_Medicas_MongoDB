@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { ObjectId } = require('mongodb');
 const { getDB } = require('../config/database');
+const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 
 // GET /api/doctors - Obtener todos los doctores
-router.get('/', async (req, res) => {
+router.get('/', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const doctors = await db.collection('doctors')
@@ -19,7 +20,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/doctors/:id - Obtener doctor por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const doctor = await db.collection('doctors').findOne({
@@ -37,7 +38,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // GET /api/doctors/specialty/:specialty - Doctores por especialidad
-router.get('/specialty/:specialty', async (req, res) => {
+router.get('/specialty/:specialty', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const doctors = await db.collection('doctors').find({
@@ -52,7 +53,7 @@ router.get('/specialty/:specialty', async (req, res) => {
 });
 
 // POST /api/doctors - Crear nuevo doctor
-router.post('/', async (req, res) => {
+router.post('/', authenticateJWT, authorizeRoles('admin'), async (req, res) => {
   try {
     const db = getDB();
     const { personalInfo, professional, contact, schedule } = req.body;
@@ -101,7 +102,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/doctors/:id - Actualizar doctor
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateJWT, authorizeRoles('admin'), async (req, res) => {
   try {
     const db = getDB();
     const { personalInfo, professional, contact, schedule, status } = req.body;
@@ -134,7 +135,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/doctors/:id - Eliminar doctor (cambiar estado a inactive)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateJWT, authorizeRoles('admin'), async (req, res) => {
   try {
     const db = getDB();
     

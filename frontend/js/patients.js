@@ -2,7 +2,7 @@
 
 async function loadPatients() {
     try {
-        const response = await fetch(`${API_BASE_URL}/patients`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/patients`);
         const patients = await response.json();
         
         const container = document.getElementById('lista-pacientes');
@@ -31,7 +31,7 @@ async function loadPatients() {
 
 async function loadPatientsForHistory() {
     try {
-        const response = await fetch(`${API_BASE_URL}/patients`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/patients`);
         const patients = await response.json();
         
         // Cargar en el selector de visualización de historial
@@ -65,7 +65,7 @@ async function loadPatientsForHistory() {
 
 async function loadDoctorsForHistory() {
     try {
-        const response = await fetch(`${API_BASE_URL}/doctors`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/doctors`);
         const doctors = await response.json();
         
         const select = document.getElementById('doctor-registro');
@@ -85,9 +85,9 @@ async function loadDoctorsForHistory() {
     }
 }
 
-async function loadMedicalHistory(patientId) {
+async function loadPatientHistory(patientId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/medical-records/patient/${patientId}`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/medical-records/patient/${patientId}`);
         const records = await response.json();
         
         const container = document.getElementById('historial-contenido');

@@ -39,6 +39,20 @@ Después de crear el servicio, ve a **Environment** y agrega:
 MONGODB_URI = mongodb+srv://<USERNAME>:<PASSWORD>@<CLUSTER>.mongodb.net/gestion_citas_medicas?retryWrites=true&w=majority
 ```
 
+### Variables de Seguridad (REQUERIDAS):
+```
+JWT_SECRET = genera-un-string-aleatorio-muy-largo-y-seguro-aqui
+JWT_EXPIRES_IN = 24h
+```
+
+**⚠️ IMPORTANTE para JWT_SECRET:**
+1. **NUNCA** uses un valor por defecto en producción
+2. Genera un valor aleatorio seguro:
+   - En terminal: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
+   - O usa un generador online de strings aleatorios
+3. Debe ser diferente en cada entorno (desarrollo, producción)
+4. **NUNCA** lo subas a GitHub
+
 ### Variables Opcionales:
 ```
 NODE_ENV = production

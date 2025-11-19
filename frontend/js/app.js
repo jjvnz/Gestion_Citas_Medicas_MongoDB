@@ -52,6 +52,12 @@ function showSection(sectionId) {
 
 // Cargar datos según la sección
 async function loadSectionData(sectionId) {
+    // Verificar autenticación antes de cargar datos
+    if (!getAuthToken || !getAuthToken()) {
+        console.warn('No se pueden cargar datos sin autenticación');
+        return;
+    }
+    
     switch(sectionId) {
         case 'inicio':
             await loadDashboardStats();
@@ -76,36 +82,63 @@ async function loadSectionData(sectionId) {
 
 // Cargar estadísticas del dashboard
 async function loadDashboardStats() {
+    // Verificar que hay token antes de intentar cargar
+    if (!getAuthToken || !getAuthToken()) {
+        console.warn('No se puede cargar estadísticas sin autenticación');
+        return;
+    }
+    
     try {
         const [patientsRes, doctorsRes, appointmentsRes] = await Promise.all([
-            fetch(`${API_BASE_URL}/patients`),
-            fetch(`${API_BASE_URL}/doctors`),
-            fetch(`${API_BASE_URL}/appointments`)
+            authenticatedFetch(`${API_BASE_URL}/patients`),
+            authenticatedFetch(`${API_BASE_URL}/doctors`),
+            authenticatedFetch(`${API_BASE_URL}/appointments`)
         ]);
         
         const patients = await patientsRes.json();
         const doctors = await doctorsRes.json();
         const appointments = await appointmentsRes.json();
         
+        // Validar que sean arrays
+        const patientsArray = Array.isArray(patients) ? patients : [];
+        const doctorsArray = Array.isArray(doctors) ? doctors : [];
+        const appointmentsArray = Array.isArray(appointments) ? appointments : [];
+        
         const today = new Date().toISOString().split('T')[0];
-        const appointmentsToday = appointments.filter(apt => 
-            apt.dateTime.startsWith(today) && 
+        const appointmentsToday = appointmentsArray.filter(apt => 
+            apt.dateTime && apt.dateTime.startsWith(today) && 
             ['scheduled', 'confirmed'].includes(apt.status)
         );
         
-        const pendingAppointments = appointments.filter(apt => 
+        const pendingAppointments = appointmentsArray.filter(apt => 
             ['scheduled', 'confirmed'].includes(apt.status)
         );
         
-        document.getElementById('total-pacientes').textContent = patients.length;
+        document.getElementById('total-pacientes').textContent = patientsArray.length;
         document.getElementById('total-doctores').textContent = 
-            doctors.filter(d => d.status === 'active').length;
+            doctorsArray.filter(d => d.status === 'active').length;
         document.getElementById('citas-hoy').textContent = appointmentsToday.length;
         document.getElementById('citas-pendientes').textContent = pendingAppointments.length;
         
     } catch (error) {
         console.error('Error cargando estadísticas:', error);
-        showNotification('Error cargando estadísticas', 'error');
+        // Mostrar valores por defecto en caso de error
+        const totalPacientes = document.getElementById('total-pacientes');
+        const totalDoctores = document.getElementById('total-doctores');
+        const citasHoy = document.getElementById('citas-hoy');
+        const citasPendientes = document.getElementById('citas-pendientes');
+        
+        if (totalPacientes) totalPacientes.textContent = '0';
+        if (totalDoctores) totalDoctores.textContent = '0';
+        if (citasHoy) citasHoy.textContent = '0';
+        if (citasPendientes) citasPendientes.textContent = '0';
+        
+        // Solo mostrar notificación si NO es error de autenticación
+        if (!error.message.includes('Sesión expirada') && 
+            !error.message.includes('No autenticado') &&
+            typeof showNotification === 'function') {
+            showNotification('Error cargando estadísticas del dashboard', 'error');
+        }
     }
 }
 
@@ -120,8 +153,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Cargar sección inicial
-    showSection('inicio');
+    // NO cargar sección inicial aquí - se carga después del login en auth.js
+    // showSection('inicio'); // ❌ REMOVIDO
     
     // Configurar formularios
     setupFormHandlers();
@@ -166,11 +199,8 @@ async function handleCitaSubmit(e) {
     };
     
     try {
-        const response = await fetch(`${API_BASE_URL}/appointments`, {
+        const response = await authenticatedFetch(`${API_BASE_URL}/appointments`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify(formData)
         });
         
@@ -209,11 +239,8 @@ async function handlePacienteSubmit(e) {
     try {
         console.log('Enviando datos:', formData); // Debug
         
-        const response = await fetch(`${API_BASE_URL}/patients`, {
+        const response = await authenticatedFetch(`${API_BASE_URL}/patients`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify(formData)
         });
         
@@ -265,11 +292,8 @@ async function handleHistorialSubmit(e) {
     try {
         console.log('Enviando registro médico:', formData); // Debug
         
-        const response = await fetch(`${API_BASE_URL}/medical-records`, {
+        const response = await authenticatedFetch(`${API_BASE_URL}/medical-records`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify(formData)
         });
         

@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { ObjectId } = require('mongodb');
 const { getDB } = require('../config/database');
+const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 
 // GET /api/patients - Obtener todos los pacientes
-router.get('/', async (req, res) => {
+router.get('/', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const patients = await db.collection('patients')
@@ -19,7 +20,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/patients/:id - Obtener paciente por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const patient = await db.collection('patients').findOne({
@@ -37,7 +38,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/patients - Crear nuevo paciente
-router.post('/', async (req, res) => {
+router.post('/', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const { personalInfo, contact, medicalInfo, emergencyContact } = req.body;
@@ -96,7 +97,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/patients/:id - Actualizar paciente
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
     const { personalInfo, contact, medicalInfo, emergencyContact, status } = req.body;
@@ -129,7 +130,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/patients/:id - Eliminar paciente (cambiar estado)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateJWT, authorizeRoles('admin'), async (req, res) => {
   try {
     const db = getDB();
     

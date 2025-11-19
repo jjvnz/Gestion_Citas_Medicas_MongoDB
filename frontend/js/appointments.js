@@ -3,7 +3,7 @@
 
 async function loadAppointments() {
     try {
-        const response = await fetch(`${API_BASE_URL}/appointments`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/appointments`);
         const appointments = await response.json();
         
         const container = document.getElementById('lista-citas');
@@ -42,7 +42,7 @@ async function loadAppointments() {
 
 async function loadDoctorsForAppointments() {
     try {
-        const response = await fetch(`${API_BASE_URL}/doctors`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/doctors`);
         const doctors = await response.json();
         
         const select = document.getElementById('doctor-cita');
@@ -64,7 +64,7 @@ async function loadDoctorsForAppointments() {
 
 async function loadPatientsForAppointments() {
     try {
-        const response = await fetch(`${API_BASE_URL}/patients`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/patients`);
         const patients = await response.json();
         
         const select = document.getElementById('paciente-cita');
@@ -86,7 +86,7 @@ async function loadPatientsForAppointments() {
 
 async function updateAppointmentStatus(appointmentId, newStatus) {
     try {
-        const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/status`, {
+        const response = await authenticatedFetch(`${API_BASE_URL}/appointments/${appointmentId}/status`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

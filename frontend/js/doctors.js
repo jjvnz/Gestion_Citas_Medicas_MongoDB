@@ -2,7 +2,7 @@
 
 async function loadDoctors() {
     try {
-        const response = await fetch(`${API_BASE_URL}/doctors`);
+        const response = await authenticatedFetch(`${API_BASE_URL}/doctors`);
         const doctors = await response.json();
         
         const container = document.getElementById('lista-doctores');

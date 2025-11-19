@@ -1,52 +1,103 @@
-// Sistema de autenticación simulado
-
-// Verificar si hay sesión activa al cargar
 document.addEventListener('DOMContentLoaded', function() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    const userName = localStorage.getItem('userName');
+    checkAuthStatus();
     
-    if (isLoggedIn === 'true') {
-        showMainApp(userName);
-    } else {
-        showLoginScreen();
-    }
-    
-    // Configurar formulario de login
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
     }
     
-    // Actualizar fecha actual
     updateCurrentDate();
 });
 
-function handleLogin(e) {
+async function checkAuthStatus() {
+    const token = localStorage.getItem('authToken');
+    
+    if (token) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/validate-token`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.data.valid) {
+                const userResponse = await fetch(`${API_BASE_URL}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const userData = await userResponse.json();
+
+                if (userData.success) {
+                    const user = userData.data.user;
+                    const userName = user.profile?.firstName || user.username || 'Usuario';
+                    localStorage.setItem('userName', userName);
+                    localStorage.setItem('userRole', user.role);
+                    showMainApp(userName);
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error('Error validando token:', error);
+        }
+    }
+    
+    showLoginScreen();
+}
+
+async function handleLogin(e) {
     e.preventDefault();
     
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     
-    // Validación simple (en producción esto sería con backend)
-    if (username === 'admin' && password === 'admin123') {
-        // Login exitoso
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userName', 'Administrador');
-        
-        showNotification('¡Bienvenido! Inicio de sesión exitoso', 'success');
-        
-        setTimeout(() => {
-            showMainApp('Administrador');
-        }, 500);
-    } else {
-        showNotification('Usuario o contraseña incorrectos', 'error');
-        
-        // Shake animation en el formulario
-        const loginBox = document.querySelector('.login-box');
-        loginBox.classList.add('shake');
-        setTimeout(() => {
-            loginBox.classList.remove('shake');
-        }, 500);
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando sesión...';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            localStorage.setItem('authToken', data.data.token);
+            const user = data.data.user;
+            const userName = user.profile?.firstName || user.username || 'Usuario';
+            localStorage.setItem('userName', userName);
+            localStorage.setItem('userRole', user.role);
+            
+            showNotification('¡Bienvenido! Inicio de sesión exitoso', 'success');
+            
+            setTimeout(() => {
+                showMainApp(userName);
+            }, 500);
+        } else {
+            showNotification(data.message || 'Usuario o contraseña incorrectos', 'error');
+            
+            const loginBox = document.querySelector('.login-box');
+            loginBox.classList.add('shake');
+            setTimeout(() => {
+                loginBox.classList.remove('shake');
+            }, 500);
+        }
+    } catch (error) {
+        showNotification('Error de conexión. Intenta nuevamente.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     }
 }
 
@@ -68,31 +119,31 @@ function showMainApp(userName) {
         loginScreen.classList.remove('active');
         setTimeout(() => {
             mainApp.classList.add('active');
+            
+            if (typeof showSection === 'function') {
+                showSection('inicio');
+            } else if (typeof loadDashboardStats === 'function') {
+                loadDashboardStats();
+            }
         }, 100);
     }
     
-    // Actualizar nombre de usuario en la interfaz
     const userNameElements = document.querySelectorAll('#user-name, #welcome-user');
     userNameElements.forEach(el => {
         if (el) el.textContent = userName;
     });
-    
-    // Cargar datos del dashboard
-    if (typeof loadDashboardStats === 'function') {
-        loadDashboardStats();
-    }
 }
 
 function logout() {
     if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('authToken');
         localStorage.removeItem('userName');
+        localStorage.removeItem('userRole');
         
         showNotification('Sesión cerrada exitosamente', 'info');
         
         setTimeout(() => {
             showLoginScreen();
-            // Limpiar formulario
             const loginForm = document.getElementById('login-form');
             if (loginForm) {
                 loginForm.reset();
@@ -114,19 +165,8 @@ function updateCurrentDate() {
     const currentDate = new Date().toLocaleDateString('es-ES', options);
     dateElement.textContent = currentDate.charAt(0).toUpperCase() + currentDate.slice(1);
     
-    // Actualizar cada minuto
     setInterval(() => {
         const newDate = new Date().toLocaleDateString('es-ES', options);
         dateElement.textContent = newDate.charAt(0).toUpperCase() + newDate.slice(1);
     }, 60000);
 }
-
-// Prevenir cierre de sesión accidental
-window.addEventListener('beforeunload', function(e) {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
-        // Solo mostrar advertencia si hay datos no guardados
-        // e.preventDefault();
-        // e.returnValue = '';
-    }
-});
