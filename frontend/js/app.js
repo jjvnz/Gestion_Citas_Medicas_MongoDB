@@ -292,6 +292,7 @@ async function loadMedicalHistory(patientId) {
             </div>
         `).join('');
     } catch (error) {
+        console.error('Error cargando historial médico:', error);
         const container = document.getElementById('historial-contenido');
         if (container) {
             container.innerHTML = '<p class="no-data">Error cargando historial médico</p>';
