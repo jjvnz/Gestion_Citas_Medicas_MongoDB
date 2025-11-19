@@ -1079,6 +1079,180 @@ footer {
 }
 
 /* ========================================
+   MODAL DE EDICIÓN
+======================================== */
+
+.edit-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    opacity: 0;
+    animation: fadeInOverlay 0.3s ease forwards;
+}
+
+.edit-modal {
+    background: white;
+    border-radius: 20px;
+    box-shadow: var(--shadow-xl);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.edit-modal-header {
+    padding: 2rem 2rem 1rem;
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.edit-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.edit-modal-title i {
+    color: var(--primary);
+    font-size: 1.75rem;
+}
+
+.edit-modal-body {
+    padding: 2rem;
+}
+
+.edit-modal-body .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.edit-modal-body label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--gray-700);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.edit-modal-body input[type="text"],
+.edit-modal-body input[type="email"],
+.edit-modal-body input[type="tel"],
+.edit-modal-body input[type="datetime-local"],
+.edit-modal-body select,
+.edit-modal-body textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    background: white;
+    color: var(--gray-800);
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.edit-modal-body input[type="text"]:focus,
+.edit-modal-body input[type="email"]:focus,
+.edit-modal-body input[type="tel"]:focus,
+.edit-modal-body input[type="datetime-local"]:focus,
+.edit-modal-body select:focus,
+.edit-modal-body textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.edit-modal-body textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.edit-modal-body .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.edit-modal-body select {
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .edit-modal-body .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .edit-modal {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .edit-modal-actions {
+        flex-direction: column-reverse;
+    }
+    
+    .edit-modal-btn {
+        width: 100%;
+    }
+}
+
+.edit-modal-actions {
+    padding: 1.5rem 2rem 2rem;
+    display: flex;
+    gap: 1rem;
+    border-top: 2px solid var(--gray-100);
+}
+
+.edit-modal-btn {
+    flex: 1;
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.edit-modal-btn-cancel {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.edit-modal-btn-cancel:hover {
+    background: var(--gray-200);
+    transform: translateY(-2px);
+}
+
+.edit-modal-btn-save {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+}
+
+.edit-modal-btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+}
+
+.edit-modal-btn i {
+    font-size: 1.1rem;
+}
+
+/* ========================================
    RESPONSIVE
 ======================================== */
 

@@ -44,24 +44,61 @@ router.post('/', authenticateJWT, authorizeRoles('admin', 'receptionist'), async
     const db = getDB();
     const { personalInfo, contact, medicalInfo, emergencyContact } = req.body;
     
-    // Validaciones básicas
-    if (!personalInfo || !personalInfo.firstName || !personalInfo.lastName) {
-      return res.status(400).json({ error: 'Nombre y apellido son requeridos' });
+    // VALIDACIÓN (capa Backend)
+    const errors = [];
+    
+    if (!personalInfo || !personalInfo.firstName || personalInfo.firstName.trim() === '') {
+      errors.push('El nombre es requerido');
+    }
+    if (!personalInfo || !personalInfo.lastName || personalInfo.lastName.trim() === '') {
+      errors.push('El apellido es requerido');
+    }
+    if (!personalInfo || !personalInfo.nationalId || personalInfo.nationalId.trim() === '') {
+      errors.push('La cédula es requerida');
+    }
+    if (!personalInfo || !personalInfo.dateOfBirth) {
+      errors.push('La fecha de nacimiento es requerida');
+    }
+    if (!contact || !contact.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+      errors.push('Email válido es requerido');
+    }
+    if (!contact || !contact.phone || contact.phone.trim() === '') {
+      errors.push('El teléfono es requerido');
     }
     
-    // Crear documento con todos los campos requeridos por el schema
+    if (errors.length > 0) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Validación fallida', 
+        details: errors 
+      });
+    }
+    
+    // Verificar si ya existe un paciente con la misma cédula
+    const existingPatient = await db.collection('patients').findOne({
+      'personalInfo.nationalId': personalInfo.nationalId
+    });
+    
+    if (existingPatient) {
+      return res.status(409).json({ 
+        success: false,
+        error: 'Ya existe un paciente con esta cédula' 
+      });
+    }
+    
+    // Crear documento completo con valores por defecto
     const nuevoPaciente = {
       personalInfo: {
-        firstName: personalInfo.firstName,
-        lastName: personalInfo.lastName,
-        dateOfBirth: personalInfo.dateOfBirth ? new Date(personalInfo.dateOfBirth) : new Date('2000-01-01'), // Fecha por defecto si no se proporciona
+        firstName: personalInfo.firstName.trim(),
+        lastName: personalInfo.lastName.trim(),
+        dateOfBirth: new Date(personalInfo.dateOfBirth),
         gender: personalInfo.gender || 'No especificado',
-        nationalId: personalInfo.nationalId || ''
+        nationalId: personalInfo.nationalId.trim()
       },
       contact: {
-        email: contact?.email || '',
-        phone: contact?.phone || '',
-        address: contact?.address || {
+        email: contact.email.trim(),
+        phone: contact.phone.trim(),
+        address: contact.address || {
           street: '',
           city: '',
           postalCode: '',
@@ -92,7 +129,19 @@ router.post('/', authenticateJWT, authorizeRoles('admin', 'receptionist'), async
       message: 'Paciente creado exitosamente'
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    if (error.code === 121) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Datos inválidos según schema de base de datos',
+        details: error.errInfo
+      });
+    }
+    
+    res.status(500).json({ 
+      success: false,
+      error: 'Error interno del servidor',
+      message: error.message
+    });
   }
 });
 
@@ -101,50 +150,148 @@ router.put('/:id', authenticateJWT, authorizeRoles('admin', 'receptionist'), asy
     const db = getDB();
     const { personalInfo, contact, medicalInfo, emergencyContact, status } = req.body;
     
-    const actualizacion = {
-      $set: {
-        updatedAt: new Date()
+    // VALIDACIÓN DE DATOS (capa Backend - crítica)
+    const errors = [];
+    
+    if (personalInfo) {
+      if (!personalInfo.firstName || personalInfo.firstName.trim() === '') {
+        errors.push('El nombre es requerido');
       }
+      if (!personalInfo.lastName || personalInfo.lastName.trim() === '') {
+        errors.push('El apellido es requerido');
+      }
+      if (!personalInfo.nationalId || personalInfo.nationalId.trim() === '') {
+        errors.push('La cédula es requerida');
+      }
+      if (!personalInfo.dateOfBirth) {
+        errors.push('La fecha de nacimiento es requerida');
+      }
+    }
+    
+    if (contact) {
+      if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+        errors.push('El email no es válido');
+      }
+      if (!contact.phone || contact.phone.trim() === '') {
+        errors.push('El teléfono es requerido');
+      }
+    }
+    
+    if (status && !['active', 'inactive'].includes(status)) {
+      errors.push('El status debe ser "active" o "inactive"');
+    }
+    
+    if (errors.length > 0) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Validación fallida', 
+        details: errors 
+      });
+    }
+    
+    // Construir objeto de actualización
+    const updateFields = {
+      updatedAt: new Date()
     };
     
-    if (personalInfo) actualizacion.$set.personalInfo = personalInfo;
-    if (contact) actualizacion.$set.contact = contact;
-    if (medicalInfo) actualizacion.$set.medicalInfo = medicalInfo;
-    if (emergencyContact) actualizacion.$set.emergencyContact = emergencyContact;
-    if (status) actualizacion.$set.status = status;
+    // Convertir dateOfBirth de string a Date
+    if (personalInfo) {
+      updateFields.personalInfo = { ...personalInfo };
+      if (personalInfo.dateOfBirth) {
+        updateFields.personalInfo.dateOfBirth = new Date(personalInfo.dateOfBirth);
+      }
+    }
+    
+    if (contact) updateFields.contact = contact;
+    if (medicalInfo) updateFields.medicalInfo = medicalInfo;
+    if (emergencyContact) updateFields.emergencyContact = emergencyContact;
+    if (status) updateFields.status = status;
     
     const resultado = await db.collection('patients').updateOne(
       { _id: new ObjectId(req.params.id) },
-      actualizacion
+      { $set: updateFields }
     );
     
     if (resultado.matchedCount === 0) {
-      return res.status(404).json({ error: 'Paciente no encontrado' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Paciente no encontrado' 
+      });
     }
     
     res.json({ success: true, message: 'Paciente actualizado exitosamente' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    if (error.code === 121) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Datos inválidos según schema de base de datos',
+        details: error.errInfo
+      });
+    }
+    
+    res.status(500).json({ 
+      success: false,
+      error: 'Error interno del servidor',
+      message: error.message
+    });
   }
 });
 
-// DELETE /api/patients/:id - Eliminar paciente (cambiar estado)
+// DELETE /api/patients/:id - Eliminar paciente (soft delete)
 router.delete('/:id', authenticateJWT, authorizeRoles('admin'), async (req, res) => {
   try {
     const db = getDB();
     
+    // Verificar que el paciente existe
+    const patient = await db.collection('patients').findOne({
+      _id: new ObjectId(req.params.id)
+    });
+    
+    if (!patient) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Paciente no encontrado' 
+      });
+    }
+    
+    if (patient.status === 'inactive') {
+      return res.status(400).json({ 
+        success: false,
+        error: 'El paciente ya está inactivo' 
+      });
+    }
+    
+    // Verificar si tiene citas futuras
+    const citasFuturas = await db.collection('appointments').countDocuments({
+      patientId: new ObjectId(req.params.id),
+      dateTime: { $gte: new Date() },
+      status: { $in: ['scheduled', 'confirmed'] }
+    });
+    
+    if (citasFuturas > 0) {
+      return res.status(400).json({ 
+        success: false,
+        error: `No se puede desactivar. El paciente tiene ${citasFuturas} cita(s) programada(s)`,
+        details: { citasFuturas }
+      });
+    }
+    
+    // Soft delete - cambiar estado a inactive
     const resultado = await db.collection('patients').updateOne(
       { _id: new ObjectId(req.params.id) },
       { $set: { status: 'inactive', updatedAt: new Date() } }
     );
     
-    if (resultado.matchedCount === 0) {
-      return res.status(404).json({ error: 'Paciente no encontrado' });
-    }
-    
-    res.json({ success: true, message: 'Paciente desactivado exitosamente' });
+    res.json({ 
+      success: true, 
+      message: 'Paciente desactivado exitosamente' 
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      success: false,
+      error: 'Error interno del servidor',
+      message: error.message
+    });
   }
 });
 

@@ -48,8 +48,19 @@ async function authenticatedFetch(url, options = {}) {
             throw new Error('Sesión expirada');
         }
         
+        if (!response.ok && response.status >= 500) {
+            const errorData = await response.clone().json().catch(() => ({}));
+            console.error('Error del servidor:', {
+                status: response.status,
+                statusText: response.statusText,
+                url: url,
+                error: errorData
+            });
+        }
+        
         return response;
     } catch (error) {
+        console.error('Error en authenticatedFetch:', error);
         throw error;
     }
 }

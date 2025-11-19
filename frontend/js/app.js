@@ -264,7 +264,9 @@ async function handlePacienteSubmit(e) {
         personalInfo: {
             firstName: document.getElementById('nombre-paciente').value,
             lastName: document.getElementById('apellido-paciente').value,
-            nationalId: document.getElementById('cedula-paciente').value
+            nationalId: document.getElementById('cedula-paciente').value,
+            dateOfBirth: document.getElementById('fecha-nacimiento-paciente').value,
+            gender: document.getElementById('genero-paciente').value
         },
         contact: {
             email: document.getElementById('email-paciente').value,
@@ -286,8 +288,12 @@ async function handlePacienteSubmit(e) {
             document.getElementById('paciente-form').reset();
             await loadPatients();
         } else {
-            const errorMsg = result.error || result.message || 'Error desconocido';
-            showNotification('Error al registrar paciente: ' + errorMsg, 'error');
+            // Mostrar detalles de validación si existen
+            let errorMsg = result.error || result.message || 'Error desconocido';
+            if (result.details && Array.isArray(result.details)) {
+                errorMsg += ': ' + result.details.join(', ');
+            }
+            showNotification(errorMsg, 'error');
         }
     } catch (error) {
         showNotification('Error de conexión', 'error');

@@ -109,13 +109,43 @@ router.post('/', authenticateJWT, authorizeRoles('admin', 'receptionist'), async
 router.get('/:id', authenticateJWT, async (req, res) => {
   try {
     const db = getDB();
-    const appointment = await db.collection('appointments').findOne({
-      _id: new ObjectId(req.params.id)
-    });
+    const appointments = await db.collection('appointments').aggregate([
+      { $match: { _id: new ObjectId(req.params.id) } },
+      {
+        $lookup: {
+          from: 'doctors',
+          localField: 'doctorId',
+          foreignField: '_id',
+          as: 'doctorData'
+        }
+      },
+      {
+        $lookup: {
+          from: 'patients',
+          localField: 'patientId',
+          foreignField: '_id',
+          as: 'patientData'
+        }
+      },
+      {
+        $project: {
+          dateTime: 1,
+          duration: 1,
+          status: 1,
+          reason: 1,
+          doctorId: { $arrayElemAt: ['$doctorData', 0] },
+          patientId: { $arrayElemAt: ['$patientData', 0] },
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]).toArray();
     
-    if (!appointment) {
+    if (!appointments || appointments.length === 0) {
       return res.status(404).json({ error: 'Cita no encontrada' });
     }
+    
+    const appointment = appointments[0];
     
     // Doctor solo puede ver sus propias citas
     if (req.user.role === 'doctor') {
@@ -123,7 +153,7 @@ router.get('/:id', authenticateJWT, async (req, res) => {
         'contact.email': req.user.email
       });
       
-      if (!doctor || appointment.doctorId.toString() !== doctor._id.toString()) {
+      if (!doctor || appointment.doctorId._id.toString() !== doctor._id.toString()) {
         return res.status(403).json({ 
           success: false,
           error: 'Acceso denegado',
