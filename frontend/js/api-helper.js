@@ -67,3 +67,31 @@ async function authenticatedFetch(url, options = {}) {
 
 window.authenticatedFetch = authenticatedFetch;
 window.getAuthToken = getAuthToken;
+
+// API Helper para usar en otros módulos
+window.apiHelper = {
+    get: async (endpoint) => {
+        const response = await authenticatedFetch(`${API_BASE_URL}${endpoint}`);
+        return response.json();
+    },
+    post: async (endpoint, data) => {
+        const response = await authenticatedFetch(`${API_BASE_URL}${endpoint}`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        return response.json();
+    },
+    put: async (endpoint, data) => {
+        const response = await authenticatedFetch(`${API_BASE_URL}${endpoint}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+        return response.json();
+    },
+    delete: async (endpoint) => {
+        const response = await authenticatedFetch(`${API_BASE_URL}${endpoint}`, {
+            method: 'DELETE'
+        });
+        return response.json();
+    }
+};

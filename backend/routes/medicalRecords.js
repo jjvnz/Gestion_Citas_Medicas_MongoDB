@@ -56,6 +56,8 @@ router.get('/patient/:patientId', authenticateJWT, authorizeRoles('admin', 'doct
           prescriptions: 1,
           notes: 1,
           vitalSigns: 1,
+          doctorInfo: 1,
+          patientInfo: 1,
           doctorName: {
             $concat: [
               { $arrayElemAt: ['$doctorInfo.personalInfo.firstName', 0] },
@@ -154,56 +156,15 @@ router.get('/:id', authenticateJWT, authorizeRoles('admin', 'doctor'), async (re
   }
 });
 
-// PUT /api/medical-records/:id - Actualizar registro médico
-router.put('/:id', authenticateJWT, authorizeRoles('admin', 'doctor'), async (req, res) => {
-  try {
-    const db = getDB();
-    const { diagnosis, treatment, prescriptions, notes, vitalSigns } = req.body;
-    
-    const actualizacion = {
-      $set: {
-        updatedAt: new Date()
-      }
-    };
-    
-    if (diagnosis) actualizacion.$set.diagnosis = diagnosis;
-    if (treatment !== undefined) actualizacion.$set.treatment = treatment;
-    if (prescriptions) actualizacion.$set.prescriptions = prescriptions;
-    if (notes !== undefined) actualizacion.$set.notes = notes;
-    if (vitalSigns) actualizacion.$set.vitalSigns = vitalSigns;
-    
-    const resultado = await db.collection('medical_records').updateOne(
-      { _id: new ObjectId(req.params.id) },
-      actualizacion
-    );
-    
-    if (resultado.matchedCount === 0) {
-      return res.status(404).json({ error: 'Registro médico no encontrado' });
-    }
-    
-    res.json({ success: true, message: 'Registro médico actualizado exitosamente' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// DELETE /api/medical-records/:id - Eliminar registro médico
-router.delete('/:id', authenticateJWT, authorizeRoles('admin'), async (req, res) => {
-  try {
-    const db = getDB();
-    
-    const resultado = await db.collection('medical_records').deleteOne({
-      _id: new ObjectId(req.params.id)
-    });
-    
-    if (resultado.deletedCount === 0) {
-      return res.status(404).json({ error: 'Registro médico no encontrado' });
-    }
-    
-    res.json({ success: true, message: 'Registro médico eliminado exitosamente' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// ============================================
+// NOTA IMPORTANTE - NORMATIVA COLOMBIANA
+// ============================================
+// Según la Ley 2015 de 2020 y Resolución 866 de 2021:
+// - Los registros médicos son INMUTABLES una vez creados
+// - NO se permite editar ni eliminar registros guardados
+// - Solo se permite ANEXAR nueva información al historial
+// - Cualquier corrección debe hacerse mediante un nuevo registro
+//   que incluya fecha, hora y profesional responsable
+// ============================================
 
 module.exports = router;

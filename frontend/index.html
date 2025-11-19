@@ -325,54 +325,28 @@
 
         <!-- Sección Historial Médico -->
         <section id="historial" class="section">
-            <h2>Historial Médico</h2>
-            
-            <div class="form-section">
-                <h3>Crear Nuevo Registro Médico</h3>
-                <form id="historial-form" class="form">
-                    <div class="form-group">
-                        <label for="paciente-registro">Paciente:</label>
-                        <select id="paciente-registro" required>
-                            <option value="">Seleccionar paciente...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="doctor-registro">Doctor:</label>
-                        <select id="doctor-registro" required>
-                            <option value="">Seleccionar doctor...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="fecha-registro">Fecha:</label>
-                        <input type="date" id="fecha-registro" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="diagnostico">Diagnóstico:</label>
-                        <textarea id="diagnostico" required placeholder="Descripción del diagnóstico"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="tratamiento">Tratamiento:</label>
-                        <textarea id="tratamiento" placeholder="Tratamiento prescrito"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="notas-registro">Notas Adicionales:</label>
-                        <textarea id="notas-registro" placeholder="Observaciones del doctor"></textarea>
-                    </div>
-                    <button type="submit" class="btn-primary">Crear Registro Médico</button>
-                </form>
+            <div class="section-header">
+                <h2><i class="fas fa-notes-medical"></i> Historial Médico</h2>
             </div>
             
-            <div class="list-section">
-                <h3>Ver Historial de Paciente</h3>
-                <div class="form-group">
-                    <label for="paciente-historial">Seleccionar Paciente:</label>
-                    <select id="paciente-historial">
-                        <option value="">Seleccionar paciente...</option>
-                    </select>
+            <div class="medical-records-container">
+                <div class="patient-selector-card">
+                    <div class="selector-header">
+                        <i class="fas fa-user-injured"></i>
+                        <h3>Seleccionar Paciente</h3>
+                    </div>
+                    <div class="selector-body">
+                        <select id="paciente-historial" class="select-modern">
+                            <option value="">Buscar paciente...</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div id="historial-contenido" class="historial-grid">
-                    <!-- El historial se cargará aquí dinámicamente -->
+                <div id="historial-contenido">
+                    <div class="placeholder-state">
+                        <i class="fas fa-file-medical-alt"></i>
+                        <p>Selecciona un paciente para ver su historial médico</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -393,6 +367,7 @@
     <script src="js/patients.js"></script>
     <script src="js/doctors.js"></script>
     <script src="js/appointments.js"></script>
+    <script src="js/medicalRecords.js"></script>
     <script src="js/auth.js"></script>
 </body>
 </html>

@@ -236,7 +236,8 @@ db.medical_records.insertMany([
     vitalSigns: {
       bloodPressure: "120/80",
       heartRate: 72,
-      temperature: 36.5
+      temperature: 36.5,
+      weight: ""
     },
     createdAt: new Date()
   },
@@ -264,7 +265,8 @@ db.medical_records.insertMany([
     vitalSigns: {
       bloodPressure: "130/85",
       heartRate: 68,
-      temperature: 36.7
+      temperature: 36.7,
+      weight: ""
     },
     createdAt: new Date()
   }

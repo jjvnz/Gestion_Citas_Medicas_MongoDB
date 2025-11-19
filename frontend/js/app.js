@@ -42,6 +42,11 @@ function showSection(sectionId) {
     // Activar enlace correspondiente
     document.querySelector(`[href="#${sectionId}"]`).classList.add('active');
     
+    // Inicializar sección de historial médico si corresponde
+    if (sectionId === 'historial' && typeof loadMedicalRecordsPage === 'function') {
+        loadMedicalRecordsPage();
+    }
+    
     // Cargar datos específicos de la sección
     loadSectionData(sectionId);
 }
@@ -213,16 +218,12 @@ function setupFormHandlers() {
         pacienteForm.addEventListener('submit', handlePacienteSubmit);
     }
     
-    // Selector de historial
-    const pacienteHistorial = document.getElementById('paciente-historial');
-    if (pacienteHistorial) {
-        pacienteHistorial.addEventListener('change', handleHistorialChange);
-    }
-    
-    // Formulario de historial médico
-    const historialForm = document.getElementById('historial-form');
-    if (historialForm) {
-        historialForm.addEventListener('submit', handleHistorialSubmit);
+}
+
+// Evento para cargar página de historiales cuando se muestra la sección
+function initMedicalRecordsSection() {
+    if (typeof loadMedicalRecordsPage === 'function') {
+        loadMedicalRecordsPage();
     }
 }
 
@@ -411,41 +412,4 @@ async function loadMedicalHistory(patientId) {
     }
 }
 
-// Manejador de envío de formulario de historial médico
-async function handleHistorialSubmit(e) {
-    e.preventDefault();
-    
-    const formData = {
-        patientId: document.getElementById('paciente-registro').value,
-        doctorId: document.getElementById('doctor-registro').value,
-        date: document.getElementById('fecha-registro').value,
-        diagnosis: document.getElementById('diagnostico').value,
-        treatment: document.getElementById('tratamiento').value || '',
-        notes: document.getElementById('notas-registro').value || '',
-        prescriptions: []
-    };
-    
-    try {
-        const response = await authenticatedFetch(`${API_BASE_URL}/medical-records`, {
-            method: 'POST',
-            body: JSON.stringify(formData)
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok && result.success) {
-            showNotification('Registro médico creado exitosamente', 'success');
-            document.getElementById('historial-form').reset();
-            
-            const selectedPatient = document.getElementById('paciente-historial').value;
-            if (selectedPatient) {
-                await loadMedicalHistory(selectedPatient);
-            }
-        } else {
-            const errorMsg = result.error || result.message || 'Error desconocido';
-            showNotification('Error al crear registro: ' + errorMsg, 'error');
-        }
-    } catch (error) {
-        showNotification('Error de conexión', 'error');
-    }
-}
+// Función eliminada - ahora se usa medicalRecords.js
