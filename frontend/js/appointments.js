@@ -196,7 +196,7 @@ function showEditAppointmentModal(appointment, doctors, patients) {
                             <option value="">Seleccionar paciente...</option>
                             ${patients.filter(p => p.status === 'active').map(p => `
                                 <option value="${p._id}" ${appointment.patientId && p._id === appointment.patientId._id ? 'selected' : ''}>
-                                    ${p.personalInfo.firstName} ${p.personalInfo.lastName} - ${p.personalInfo.nationalId}
+                                    ${escapeHtml(p.personalInfo.firstName)} ${escapeHtml(p.personalInfo.lastName)} - ${escapeHtml(p.personalInfo.nationalId)}
                                 </option>
                             `).join('')}
                         </select>
@@ -207,7 +207,7 @@ function showEditAppointmentModal(appointment, doctors, patients) {
                             <option value="">Seleccionar doctor...</option>
                             ${doctors.filter(d => d.status === 'active').map(d => `
                                 <option value="${d._id}" ${appointment.doctorId && d._id === appointment.doctorId._id ? 'selected' : ''}>
-                                    Dr. ${d.personalInfo.firstName} ${d.personalInfo.lastName} - ${d.professional.specialties.join(', ')}
+                                    Dr. ${escapeHtml(d.personalInfo.firstName)} ${escapeHtml(d.personalInfo.lastName)} - ${escapeHtml(d.professional.specialties.join(', '))}
                                 </option>
                             `).join('')}
                         </select>
@@ -218,7 +218,7 @@ function showEditAppointmentModal(appointment, doctors, patients) {
                     </div>
                     <div class="form-group">
                         <label for="edit-reason">Motivo de la Consulta:</label>
-                        <textarea id="edit-reason" rows="3" required>${appointment.reason}</textarea>
+                        <textarea id="edit-reason" rows="3" required>${escapeHtml(appointment.reason)}</textarea>
                     </div>
                     <div class="form-group">
                         <label for="edit-status">Estado:</label>

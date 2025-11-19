@@ -14,12 +14,14 @@ async function loadPatients() {
             return;
         }
         
-        container.innerHTML = patients.map(patient => `
+        container.innerHTML = patients.map(patient => {
+            const fullName = escapeHtml(`${patient.personalInfo.firstName} ${patient.personalInfo.lastName}`);
+            return `
             <div class="card">
-                <h4>${patient.personalInfo.firstName} ${patient.personalInfo.lastName}</h4>
-                <p><strong>Cédula:</strong> ${patient.personalInfo.nationalId}</p>
-                <p><strong>Email:</strong> ${patient.contact.email}</p>
-                <p><strong>Teléfono:</strong> ${patient.contact.phone}</p>
+                <h4>${fullName}</h4>
+                <p><strong>Cédula:</strong> ${escapeHtml(patient.personalInfo.nationalId)}</p>
+                <p><strong>Email:</strong> ${escapeHtml(patient.contact.email)}</p>
+                <p><strong>Teléfono:</strong> ${escapeHtml(patient.contact.phone)}</p>
                 <p><strong>Estado:</strong> <span class="status ${patient.status}">${patient.status === 'active' ? 'Activo' : 'Inactivo'}</span></p>
                 ${['admin', 'receptionist'].includes(userRole) ? `
                     <div class="card-actions">
@@ -28,12 +30,12 @@ async function loadPatients() {
                         </button>
                         ${userRole === 'admin' ? `
                             ${patient.status === 'active' ? `
-                                <button onclick="deletePatient('${patient._id}', '${patient.personalInfo.firstName} ${patient.personalInfo.lastName}')" 
+                                <button onclick="deletePatient('${patient._id}', '${escapeHtml(fullName).replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" 
                                         class="btn-small btn-danger">
                                     <i class="fas fa-trash"></i> Desactivar
                                 </button>
                             ` : `
-                                <button onclick="reactivatePatient('${patient._id}', '${patient.personalInfo.firstName} ${patient.personalInfo.lastName}')" 
+                                <button onclick="reactivatePatient('${patient._id}', '${escapeHtml(fullName).replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" 
                                         class="btn-small btn-success">
                                     <i class="fas fa-check-circle"></i> Reactivar
                                 </button>
@@ -42,7 +44,7 @@ async function loadPatients() {
                     </div>
                 ` : ''}
             </div>
-        `).join('');
+        `}).join('');
         
     } catch (error) {
         console.error('Error cargando pacientes:', error);
@@ -61,8 +63,8 @@ async function loadPatientsForHistory() {
             selectHistorial.innerHTML = '<option value="">Seleccionar paciente...</option>' +
                 patients.map(patient => `
                     <option value="${patient._id}">
-                        ${patient.personalInfo.firstName} ${patient.personalInfo.lastName} - 
-                        ${patient.personalInfo.nationalId}
+                        ${escapeHtml(patient.personalInfo.firstName)} ${escapeHtml(patient.personalInfo.lastName)} - 
+                        ${escapeHtml(patient.personalInfo.nationalId)}
                     </option>
                 `).join('');
         }
@@ -73,8 +75,8 @@ async function loadPatientsForHistory() {
             selectRegistro.innerHTML = '<option value="">Seleccionar paciente...</option>' +
                 patients.map(patient => `
                     <option value="${patient._id}">
-                        ${patient.personalInfo.firstName} ${patient.personalInfo.lastName} - 
-                        ${patient.personalInfo.nationalId}
+                        ${escapeHtml(patient.personalInfo.firstName)} ${escapeHtml(patient.personalInfo.lastName)} - 
+                        ${escapeHtml(patient.personalInfo.nationalId)}
                     </option>
                 `).join('');
         }
@@ -97,8 +99,8 @@ async function loadDoctorsForHistory() {
             doctors.filter(doctor => doctor.status === 'active')
                 .map(doctor => `
                     <option value="${doctor._id}">
-                        Dr. ${doctor.personalInfo.firstName} ${doctor.personalInfo.lastName} - 
-                        ${doctor.professional.specialties.join(', ')}
+                        Dr. ${escapeHtml(doctor.personalInfo.firstName)} ${escapeHtml(doctor.personalInfo.lastName)} - 
+                        ${escapeHtml(doctor.professional.specialties.join(', '))}
                     </option>
                 `).join('');
                 
@@ -138,24 +140,24 @@ function showEditPatientModal(patient) {
                     <div class="form-row">
                         <div class="form-group">
                             <label for="edit-nombre">Nombre:</label>
-                            <input type="text" id="edit-nombre" value="${patient.personalInfo.firstName}" required>
+                            <input type="text" id="edit-nombre" value="${escapeHtml(patient.personalInfo.firstName)}" required>
                         </div>
                         <div class="form-group">
                             <label for="edit-apellido">Apellido:</label>
-                            <input type="text" id="edit-apellido" value="${patient.personalInfo.lastName}" required>
+                            <input type="text" id="edit-apellido" value="${escapeHtml(patient.personalInfo.lastName)}" required>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="edit-cedula">Cédula:</label>
-                        <input type="text" id="edit-cedula" value="${patient.personalInfo.nationalId}" required>
+                        <input type="text" id="edit-cedula" value="${escapeHtml(patient.personalInfo.nationalId)}" required>
                     </div>
                     <div class="form-group">
                         <label for="edit-email">Email:</label>
-                        <input type="email" id="edit-email" value="${patient.contact.email}" required>
+                        <input type="email" id="edit-email" value="${escapeHtml(patient.contact.email)}" required>
                     </div>
                     <div class="form-group">
                         <label for="edit-telefono">Teléfono:</label>
-                        <input type="tel" id="edit-telefono" value="${patient.contact.phone}" required>
+                        <input type="tel" id="edit-telefono" value="${escapeHtml(patient.contact.phone)}" required>
                     </div>
                 </form>
             </div>
@@ -228,7 +230,7 @@ function showEditPatientModal(patient) {
 async function deletePatient(patientId, patientName) {
     showConfirmModal(
         '¿Desactivar paciente?',
-        `¿Estás seguro de que deseas desactivar al paciente <strong>${patientName}</strong>? Podrás reactivarlo más tarde si es necesario.`,
+        `¿Estás seguro de que deseas desactivar al paciente <strong>${escapeHtml(patientName)}</strong>? Podrás reactivarlo más tarde si es necesario.`,
         async () => {
             try {
                 const response = await authenticatedFetch(`${API_BASE_URL}/patients/${patientId}`, {
@@ -261,7 +263,7 @@ async function deletePatient(patientId, patientName) {
 async function reactivatePatient(patientId, patientName) {
     showConfirmModal(
         '¿Reactivar paciente?',
-        `¿Estás seguro de que deseas reactivar al paciente <strong>${patientName}</strong>?`,
+        `¿Estás seguro de que deseas reactivar al paciente <strong>${escapeHtml(patientName)}</strong>?`,
         async () => {
             try {
                 const response = await authenticatedFetch(`${API_BASE_URL}/patients/${patientId}`, {
@@ -305,18 +307,18 @@ async function loadPatientHistory(patientId) {
                     month: 'long', 
                     day: 'numeric' 
                 })}</h4>
-                ${record.doctorName ? `<p><strong>👨‍⚕️ Doctor:</strong> ${record.doctorName}</p>` : ''}
-                <p><strong>🩺 Diagnóstico:</strong> ${record.diagnosis || 'No especificado'}</p>
-                ${record.treatment ? `<p><strong>💊 Tratamiento:</strong> ${record.treatment}</p>` : ''}
+                ${record.doctorName ? `<p><strong>👨‍⚕️ Doctor:</strong> ${escapeHtml(record.doctorName)}</p>` : ''}
+                <p><strong>🩺 Diagnóstico:</strong> ${escapeHtml(record.diagnosis || 'No especificado')}</p>
+                ${record.treatment ? `<p><strong>💊 Tratamiento:</strong> ${escapeHtml(record.treatment)}</p>` : ''}
                 ${record.prescriptions && record.prescriptions.length > 0 ? `
                     <div>
                         <p><strong>Medicamentos:</strong></p>
                         <ul>
-                            ${record.prescriptions.map(med => `<li>${med.name || med} - ${med.dosage || ''}</li>`).join('')}
+                            ${record.prescriptions.map(med => `<li>${escapeHtml(med.name || med)} - ${escapeHtml(med.dosage || '')}</li>`).join('')}
                         </ul>
                     </div>
                 ` : ''}
-                ${record.notes ? `<p><strong>📝 Notas:</strong> ${record.notes}</p>` : ''}
+                ${record.notes ? `<p><strong>📝 Notas:</strong> ${escapeHtml(record.notes)}</p>` : ''}
             </div>
         `).join('');
         

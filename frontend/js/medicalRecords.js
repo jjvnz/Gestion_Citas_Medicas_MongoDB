@@ -131,7 +131,7 @@ function createRecordCard(record) {
     });
     
     const doctorName = record.doctorInfo?.[0] 
-        ? `Dr. ${record.doctorInfo[0].personalInfo.firstName} ${record.doctorInfo[0].personalInfo.lastName}`
+        ? `Dr. ${escapeHtml(record.doctorInfo[0].personalInfo.firstName)} ${escapeHtml(record.doctorInfo[0].personalInfo.lastName)}`
         : 'Doctor no asignado';
     
     const specialty = record.doctorInfo?.[0]?.specialization || 
@@ -150,20 +150,20 @@ function createRecordCard(record) {
                 </div>
                 <div class="header-right">
                     <div class="record-doctor">${doctorName}</div>
-                    ${specialty ? `<div class="record-specialty">${specialty}</div>` : ''}
+                    ${specialty ? `<div class="record-specialty">${escapeHtml(specialty)}</div>` : ''}
                 </div>
             </div>
             
             <div class="record-card-body">
                 <div class="record-section">
                     <h4><i class="fas fa-stethoscope"></i> Diagnóstico</h4>
-                    <p>${record.diagnosis || 'No especificado'}</p>
+                    <p>${escapeHtml(record.diagnosis || 'No especificado')}</p>
                 </div>
                 
                 ${record.treatment ? `
                     <div class="record-section">
                         <h4><i class="fas fa-pills"></i> Tratamiento</h4>
-                        <p>${record.treatment}</p>
+                        <p>${escapeHtml(record.treatment)}</p>
                     </div>
                 ` : ''}
                 
@@ -173,7 +173,7 @@ function createRecordCard(record) {
                         <ul class="prescriptions-list">
                             ${record.prescriptions.map(p => {
                                 if (typeof p === 'string') {
-                                    return `<li>${p}</li>`;
+                                    return `<li>${escapeHtml(p)}</li>`;
                                 } else if (p && typeof p === 'object') {
                                     const medication = p.medication || '';
                                     const dosage = p.dosage || '';
@@ -185,9 +185,9 @@ function createRecordCard(record) {
                                     }
                                     
                                     return `<li>
-                                        <strong>${medication}</strong>${dosage ? ` - ${dosage}` : ''}
-                                        ${frequency ? `<br><small><i class="fas fa-clock"></i> ${frequency}</small>` : ''}
-                                        ${duration ? `<br><small><i class="fas fa-calendar-check"></i> Duración: ${duration}</small>` : ''}
+                                        <strong>${escapeHtml(medication)}</strong>${dosage ? ` - ${escapeHtml(dosage)}` : ''}
+                                        ${frequency ? `<br><small><i class="fas fa-clock"></i> ${escapeHtml(frequency)}</small>` : ''}
+                                        ${duration ? `<br><small><i class="fas fa-calendar-check"></i> Duración: ${escapeHtml(duration)}</small>` : ''}
                                     </li>`;
                                 }
                                 return '';
@@ -204,28 +204,28 @@ function createRecordCard(record) {
                                 <div class="vital-sign-item">
                                     <i class="fas fa-heart"></i>
                                     <strong>Presión Arterial</strong>
-                                    <span>${record.vitalSigns.bloodPressure}</span>
+                                    <span>${escapeHtml(record.vitalSigns.bloodPressure)}</span>
                                 </div>
                             ` : ''}
                             ${record.vitalSigns.heartRate ? `
                                 <div class="vital-sign-item">
                                     <i class="fas fa-heartbeat"></i>
                                     <strong>Frecuencia Cardíaca</strong>
-                                    <span>${record.vitalSigns.heartRate} bpm</span>
+                                    <span>${escapeHtml(String(record.vitalSigns.heartRate))} bpm</span>
                                 </div>
                             ` : ''}
                             ${record.vitalSigns.temperature ? `
                                 <div class="vital-sign-item">
                                     <i class="fas fa-thermometer-half"></i>
                                     <strong>Temperatura</strong>
-                                    <span>${record.vitalSigns.temperature}°C</span>
+                                    <span>${escapeHtml(String(record.vitalSigns.temperature))}°C</span>
                                 </div>
                             ` : ''}
                             ${record.vitalSigns.weight ? `
                                 <div class="vital-sign-item">
                                     <i class="fas fa-weight"></i>
                                     <strong>Peso</strong>
-                                    <span>${record.vitalSigns.weight} kg</span>
+                                    <span>${escapeHtml(String(record.vitalSigns.weight))} kg</span>
                                 </div>
                             ` : ''}
                         </div>
@@ -235,7 +235,7 @@ function createRecordCard(record) {
                 ${record.notes ? `
                     <div class="record-section">
                         <h4><i class="fas fa-notes-medical"></i> Notas Adicionales</h4>
-                        <p>${record.notes}</p>
+                        <p>${escapeHtml(record.notes)}</p>
                     </div>
                 ` : ''}
             </div>
@@ -260,13 +260,13 @@ function showMedicalRecordModal(recordId = null) {
     const patientId = document.getElementById('paciente-historial').value;
     
     if (!patientId) {
-        alert('Por favor selecciona un paciente primero');
+        showNotification('Por favor selecciona un paciente primero', 'warning');
         return;
     }
     
     // Verificar que haya doctores disponibles
     if (!window.doctorsList || window.doctorsList.length === 0) {
-        alert('No hay doctores disponibles. Por favor recarga la página.');
+        showNotification('No hay doctores disponibles. Por favor recarga la página.', 'error');
         return;
     }
     
@@ -288,7 +288,7 @@ function showMedicalRecordModal(recordId = null) {
                             const specialty = doc.specialization || doc.professional?.specialties?.[0] || 'Medicina General';
                             return `
                                 <option value="${doc._id}">
-                                    Dr. ${doc.personalInfo.firstName} ${doc.personalInfo.lastName} - ${specialty}
+                                    Dr. ${escapeHtml(doc.personalInfo.firstName)} ${escapeHtml(doc.personalInfo.lastName)} - ${escapeHtml(specialty)}
                                 </option>
                             `;
                         }).join('')}
@@ -404,7 +404,7 @@ async function loadRecordDataToModal(recordId) {
         }
     } catch (error) {
         console.error('Error al cargar datos del registro:', error);
-        alert('Error al cargar los datos del registro');
+        showNotification('Error al cargar los datos del registro', 'error');
         closeModal();
     }
 }
@@ -447,11 +447,11 @@ async function createMedicalRecord() {
         };
         
         await apiHelper.post('/medical-records', data);
-        alert('Registro médico creado exitosamente');
+        showNotification('Registro médico creado exitosamente', 'success');
         closeModal();
         await loadMedicalHistory(patientId);
     } catch (error) {
         console.error('Error al crear registro:', error);
-        alert('Error al crear el registro médico: ' + (error.message || 'Error desconocido'));
+        showNotification('Error al crear el registro médico: ' + (error.message || 'Error desconocido'), 'error');
     }
 }

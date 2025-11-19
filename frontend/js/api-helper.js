@@ -1,5 +1,18 @@
 let isRedirectingToLogin = false;
 
+// HTML escaping function to prevent XSS attacks
+function escapeHtml(unsafe) {
+    if (unsafe === null || unsafe === undefined) {
+        return '';
+    }
+    return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 function getAuthToken() {
     return localStorage.getItem('authToken');
 }
@@ -67,11 +80,15 @@ async function authenticatedFetch(url, options = {}) {
 
 window.authenticatedFetch = authenticatedFetch;
 window.getAuthToken = getAuthToken;
+window.escapeHtml = escapeHtml;
 
 // API Helper para usar en otros módulos
 window.apiHelper = {
     get: async (endpoint) => {
         const response = await authenticatedFetch(`${API_BASE_URL}${endpoint}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         return response.json();
     },
     post: async (endpoint, data) => {

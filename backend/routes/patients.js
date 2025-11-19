@@ -59,7 +59,10 @@ router.post('/', authenticateJWT, authorizeRoles('admin', 'receptionist'), async
     if (!personalInfo || !personalInfo.dateOfBirth) {
       errors.push('La fecha de nacimiento es requerida');
     }
-    if (!contact || !contact.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+    if (!personalInfo || !personalInfo.gender) {
+      errors.push('El género es requerido');
+    }
+    if (!contact || !contact.email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(contact.email)) {
       errors.push('Email válido es requerido');
     }
     if (!contact || !contact.phone || contact.phone.trim() === '') {
@@ -92,7 +95,7 @@ router.post('/', authenticateJWT, authorizeRoles('admin', 'receptionist'), async
         firstName: personalInfo.firstName.trim(),
         lastName: personalInfo.lastName.trim(),
         dateOfBirth: new Date(personalInfo.dateOfBirth),
-        gender: personalInfo.gender || 'No especificado',
+        gender: personalInfo.gender,
         nationalId: personalInfo.nationalId.trim()
       },
       contact: {
@@ -129,18 +132,17 @@ router.post('/', authenticateJWT, authorizeRoles('admin', 'receptionist'), async
       message: 'Paciente creado exitosamente'
     });
   } catch (error) {
+    console.error('Error al crear paciente:', error);
     if (error.code === 121) {
       return res.status(400).json({ 
         success: false,
-        error: 'Datos inválidos según schema de base de datos',
-        details: error.errInfo
+        error: 'Datos inválidos según schema de base de datos'
       });
     }
     
     res.status(500).json({ 
       success: false,
-      error: 'Error interno del servidor',
-      message: error.message
+      error: 'Error interno del servidor'
     });
   }
 });
@@ -169,7 +171,7 @@ router.put('/:id', authenticateJWT, authorizeRoles('admin', 'receptionist'), asy
     }
     
     if (contact) {
-      if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+      if (contact.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(contact.email)) {
         errors.push('El email no es válido');
       }
       if (!contact.phone || contact.phone.trim() === '') {
@@ -187,6 +189,21 @@ router.put('/:id', authenticateJWT, authorizeRoles('admin', 'receptionist'), asy
         error: 'Validación fallida', 
         details: errors 
       });
+    }
+    
+    // Verificar duplicado de cédula si se está actualizando
+    if (personalInfo && personalInfo.nationalId) {
+      const existingPatient = await db.collection('patients').findOne({
+        'personalInfo.nationalId': personalInfo.nationalId,
+        _id: { $ne: new ObjectId(req.params.id) }
+      });
+      
+      if (existingPatient) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Ya existe un paciente con esta cédula' 
+        });
+      }
     }
     
     // Construir objeto de actualización
@@ -221,18 +238,17 @@ router.put('/:id', authenticateJWT, authorizeRoles('admin', 'receptionist'), asy
     
     res.json({ success: true, message: 'Paciente actualizado exitosamente' });
   } catch (error) {
+    console.error('Error al actualizar paciente:', error);
     if (error.code === 121) {
       return res.status(400).json({ 
         success: false,
-        error: 'Datos inválidos según schema de base de datos',
-        details: error.errInfo
+        error: 'Datos inválidos según schema de base de datos'
       });
     }
     
     res.status(500).json({ 
       success: false,
-      error: 'Error interno del servidor',
-      message: error.message
+      error: 'Error interno del servidor'
     });
   }
 });
@@ -287,10 +303,10 @@ router.delete('/:id', authenticateJWT, authorizeRoles('admin'), async (req, res)
       message: 'Paciente desactivado exitosamente' 
     });
   } catch (error) {
+    console.error('Error al desactivar paciente:', error);
     res.status(500).json({ 
       success: false,
-      error: 'Error interno del servidor',
-      message: error.message
+      error: 'Error interno del servidor'
     });
   }
 });

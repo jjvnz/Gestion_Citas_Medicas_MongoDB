@@ -56,7 +56,7 @@ function getUserRole() {
 }
 
 async function loadSectionData(sectionId) {
-    if (!getAuthToken || !getAuthToken()) {
+    if (!getAuthToken()) {
         return;
     }
     
@@ -130,7 +130,7 @@ async function loadSectionData(sectionId) {
 }
 
 async function loadDashboardStats() {
-    if (!getAuthToken || !getAuthToken()) {
+    if (!getAuthToken()) {
         return;
     }
     
