@@ -31,7 +31,10 @@ async function checkAuthStatus() {
                 showMainApp(userName);
                 return;
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error('Error during token validation:', error);
+            showNotification('Error de conexión al validar sesión. Intenta nuevamente.', 'error');
+        }
     }
     
     showLoginScreen();

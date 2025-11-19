@@ -35,6 +35,7 @@ async function loadDoctors() {
         `).join('');
         
     } catch (error) {
+        console.error('Error cargando doctores:', error);
         showNotification('Error cargando doctores', 'error');
     }
 }

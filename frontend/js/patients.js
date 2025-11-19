@@ -59,6 +59,7 @@ async function loadPatientsForHistory() {
         }
             
     } catch (error) {
+        console.error('Error cargando pacientes para historial:', error);
         showNotification('Error cargando pacientes para historial', 'error');
     }
 }
@@ -81,6 +82,7 @@ async function loadDoctorsForHistory() {
                 `).join('');
                 
     } catch (error) {
+        console.error('Error cargando doctores:', error);
         showNotification('Error cargando doctores', 'error');
     }
 }

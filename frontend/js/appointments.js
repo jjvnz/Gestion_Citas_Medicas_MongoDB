@@ -58,6 +58,7 @@ async function loadDoctorsForAppointments() {
                 `).join('');
                 
     } catch (error) {
+        console.error('Error cargando doctores:', error);
         showNotification('Error cargando doctores', 'error');
     }
 }
@@ -80,6 +81,7 @@ async function loadPatientsForAppointments() {
                 `).join('');
                 
     } catch (error) {
+        console.error('Error cargando pacientes:', error);
         showNotification('Error cargando pacientes', 'error');
     }
 }
