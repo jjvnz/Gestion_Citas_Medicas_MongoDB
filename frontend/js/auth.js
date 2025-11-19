@@ -124,22 +124,76 @@ function showMainApp(userName) {
     });
 }
 
+function showConfirmModal(title, message, onConfirm) {
+    // Crear el overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-modal-overlay';
+    
+    // Crear el modal
+    overlay.innerHTML = `
+        <div class="confirm-modal">
+            <div class="confirm-modal-header">
+                <div class="confirm-modal-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <h3 class="confirm-modal-title">${title}</h3>
+                <p class="confirm-modal-message">${message}</p>
+            </div>
+            <div class="confirm-modal-actions">
+                <button class="confirm-modal-btn confirm-modal-btn-cancel" id="confirm-cancel">
+                    <i class="fas fa-times"></i>
+                    <span>Cancelar</span>
+                </button>
+                <button class="confirm-modal-btn confirm-modal-btn-confirm" id="confirm-accept">
+                    <i class="fas fa-check"></i>
+                    <span>Sí, cerrar sesión</span>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Manejar la confirmación
+    const acceptBtn = overlay.querySelector('#confirm-accept');
+    const cancelBtn = overlay.querySelector('#confirm-cancel');
+    
+    const closeModal = () => {
+        overlay.style.animation = 'fadeOut 0.2s ease';
+        setTimeout(() => overlay.remove(), 200);
+    };
+    
+    acceptBtn.addEventListener('click', () => {
+        closeModal();
+        if (onConfirm) onConfirm();
+    });
+    
+    cancelBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+    });
+}
+
 function logout() {
-    if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userRole');
-        
-        showNotification('Sesión cerrada exitosamente', 'info');
-        
-        setTimeout(() => {
-            showLoginScreen();
-            const loginForm = document.getElementById('login-form');
-            if (loginForm) {
-                loginForm.reset();
-            }
-        }, 500);
-    }
+    showConfirmModal(
+        '¿Cerrar sesión?',
+        'Estás a punto de cerrar tu sesión actual. ¿Deseas continuar?',
+        () => {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userRole');
+            
+            showNotification('Sesión cerrada exitosamente', 'info');
+            
+            setTimeout(() => {
+                showLoginScreen();
+                const loginForm = document.getElementById('login-form');
+                if (loginForm) {
+                    loginForm.reset();
+                }
+            }, 500);
+        }
+    );
 }
 
 function updateCurrentDate() {
