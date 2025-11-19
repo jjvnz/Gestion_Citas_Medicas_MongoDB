@@ -7,11 +7,15 @@ const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 // Simple sanitization function to remove potentially dangerous characters
 function sanitizeInput(input) {
   if (typeof input !== 'string') return input;
-  // Remove HTML tags and script content
-  return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<[^>]+>/g, '')
-    .trim();
+  // Remove all HTML tags including malformed ones
+  let sanitized = input;
+  // Remove script tags and their content (handle multiple variations)
+  while (/<script[\s\S]*?<\/script\s*>/gi.test(sanitized)) {
+    sanitized = sanitized.replace(/<script[\s\S]*?<\/script\s*>/gi, '');
+  }
+  // Remove all remaining HTML tags
+  sanitized = sanitized.replace(/<[^>]*>/g, '');
+  return sanitized.trim();
 }
 
 
