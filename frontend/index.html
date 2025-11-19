@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare - Sistema de Gestión Médica</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Pantalla de Login -->
+    <div id="login-screen" class="login-container active">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="logo-container">
+                    <i class="fas fa-heartbeat"></i>
+                    <h1>MediCare</h1>
+                </div>
+                <p class="login-subtitle">Sistema de Gestión Médica</p>
+            </div>
+            
+            <form id="login-form" class="login-form">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" placeholder="Usuario" required value="admin">
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Contraseña" required value="admin123">
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <span>Iniciar Sesión</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                
+                <div class="login-footer">
+                    <p class="demo-info">
+                        <i class="fas fa-info-circle"></i>
+                        Demo: usuario: <strong>admin</strong> / contraseña: <strong>admin123</strong>
+                    </p>
+                </div>
+            </form>
+        </div>
+        
+        <div class="login-background">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+    </div>
+
+    <!-- Aplicación Principal -->
+    <div id="main-app" class="main-app">
+    <header>
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-heartbeat"></i>
+                <span>MediCare</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#inicio" class="nav-link active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a></li>
+                <li><a href="#citas" class="nav-link">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Citas</span>
+                </a></li>
+                <li><a href="#pacientes" class="nav-link">
+                    <i class="fas fa-users"></i>
+                    <span>Pacientes</span>
+                </a></li>
+                <li><a href="#doctores" class="nav-link">
+                    <i class="fas fa-user-md"></i>
+                    <span>Doctores</span>
+                </a></li>
+                <li><a href="#historial" class="nav-link">
+                    <i class="fas fa-file-medical"></i>
+                    <span>Historial</span>
+                </a></li>
+            </ul>
+            <div class="nav-user">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="user-name">Administrador</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- Sección Inicio -->
+        <section id="inicio" class="section active">
+            <div class="welcome-banner">
+                <div class="welcome-content">
+                    <h1>¡Bienvenido, <span id="welcome-user">Administrador</span>!</h1>
+                    <p class="welcome-text">Sistema de Gestión Médica Integral</p>
+                    <p class="welcome-date" id="current-date"></p>
+                </div>
+                <div class="welcome-illustration">
+                    <i class="fas fa-hospital-user"></i>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card stat-card-primary">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="total-pacientes">0</h3>
+                        <p>Pacientes Registrados</p>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i> 12%
+                    </div>
+                </div>
+                <div class="stat-card stat-card-success">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="total-doctores">0</h3>
+                        <p>Doctores Activos</p>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i> 8%
+                    </div>
+                </div>
+                <div class="stat-card stat-card-warning">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="citas-hoy">0</h3>
+                        <p>Citas Hoy</p>
+                    </div>
+                    <div class="stat-trend neutral">
+                        <i class="fas fa-minus"></i> 0%
+                    </div>
+                </div>
+                <div class="stat-card stat-card-info">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="citas-pendientes">0</h3>
+                        <p>Citas Pendientes</p>
+                    </div>
+                    <div class="stat-trend negative">
+                        <i class="fas fa-arrow-down"></i> 5%
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="quick-actions-card">
+                    <h3><i class="fas fa-bolt"></i> Acciones Rápidas</h3>
+                    <div class="actions-grid">
+                        <button class="action-btn action-primary" onclick="showSection('citas')">
+                            <i class="fas fa-calendar-plus"></i>
+                            <span>Nueva Cita</span>
+                        </button>
+                        <button class="action-btn action-success" onclick="showSection('pacientes')">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Nuevo Paciente</span>
+                        </button>
+                        <button class="action-btn action-info" onclick="showSection('doctores')">
+                            <i class="fas fa-stethoscope"></i>
+                            <span>Ver Doctores</span>
+                        </button>
+                        <button class="action-btn action-warning" onclick="showSection('historial')">
+                            <i class="fas fa-folder-open"></i>
+                            <span>Historial Médico</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="recent-activity-card">
+                    <h3><i class="fas fa-history"></i> Actividad Reciente</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon success">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-title">Cita completada</p>
+                                <p class="activity-time">Hace 5 minutos</p>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon primary">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-title">Nuevo paciente registrado</p>
+                                <p class="activity-time">Hace 15 minutos</p>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon warning">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-title">Cita reprogramada</p>
+                                <p class="activity-time">Hace 1 hora</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Citas -->
+        <section id="citas" class="section">
+            <h2>Gestión de Citas</h2>
+            
+            <div class="form-section">
+                <h3>Agendar Nueva Cita</h3>
+                <form id="cita-form" class="form">
+                    <div class="form-group">
+                        <label for="doctor-cita">Doctor:</label>
+                        <select id="doctor-cita" required>
+                            <option value="">Seleccionar doctor...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="paciente-cita">Paciente:</label>
+                        <select id="paciente-cita" required>
+                            <option value="">Seleccionar paciente...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha-cita">Fecha y Hora:</label>
+                        <input type="datetime-local" id="fecha-cita" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="motivo-cita">Motivo:</label>
+                        <textarea id="motivo-cita" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Agendar Cita</button>
+                </form>
+            </div>
+
+            <div class="list-section">
+                <h3>Citas Programadas</h3>
+                <div id="lista-citas" class="card-grid">
+                    <!-- Las citas se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Pacientes -->
+        <section id="pacientes" class="section">
+            <h2>Gestión de Pacientes</h2>
+            
+            <div class="form-section">
+                <h3>Registrar Nuevo Paciente</h3>
+                <form id="paciente-form" class="form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombre-paciente">Nombre:</label>
+                            <input type="text" id="nombre-paciente" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="apellido-paciente">Apellido:</label>
+                            <input type="text" id="apellido-paciente" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cedula-paciente">Cédula:</label>
+                        <input type="text" id="cedula-paciente" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email-paciente">Email:</label>
+                        <input type="email" id="email-paciente" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefono-paciente">Teléfono:</label>
+                        <input type="tel" id="telefono-paciente" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Registrar Paciente</button>
+                </form>
+            </div>
+
+            <div class="list-section">
+                <h3>Pacientes Registrados</h3>
+                <div id="lista-pacientes" class="card-grid">
+                    <!-- Los pacientes se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Doctores -->
+        <section id="doctores" class="section">
+            <h2>Gestión de Doctores</h2>
+            
+            <div class="list-section">
+                <h3>Doctores Disponibles</h3>
+                <div id="lista-doctores" class="card-grid">
+                    <!-- Los doctores se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Historial Médico -->
+        <section id="historial" class="section">
+            <h2>Historial Médico</h2>
+            
+            <div class="form-section">
+                <h3>Crear Nuevo Registro Médico</h3>
+                <form id="historial-form" class="form">
+                    <div class="form-group">
+                        <label for="paciente-registro">Paciente:</label>
+                        <select id="paciente-registro" required>
+                            <option value="">Seleccionar paciente...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="doctor-registro">Doctor:</label>
+                        <select id="doctor-registro" required>
+                            <option value="">Seleccionar doctor...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha-registro">Fecha:</label>
+                        <input type="date" id="fecha-registro" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="diagnostico">Diagnóstico:</label>
+                        <textarea id="diagnostico" required placeholder="Descripción del diagnóstico"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="tratamiento">Tratamiento:</label>
+                        <textarea id="tratamiento" placeholder="Tratamiento prescrito"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="notas-registro">Notas Adicionales:</label>
+                        <textarea id="notas-registro" placeholder="Observaciones del doctor"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Crear Registro Médico</button>
+                </form>
+            </div>
+            
+            <div class="list-section">
+                <h3>Ver Historial de Paciente</h3>
+                <div class="form-group">
+                    <label for="paciente-historial">Seleccionar Paciente:</label>
+                    <select id="paciente-historial">
+                        <option value="">Seleccionar paciente...</option>
+                    </select>
+                </div>
+
+                <div id="historial-contenido" class="historial-grid">
+                    <!-- El historial se cargará aquí dinámicamente -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p><i class="fas fa-heartbeat"></i> MediCare &copy; 2025 - Sistema de Gestión Médica</p>
+            <p class="footer-tech">Desarrollado con MongoDB, Node.js & Express</p>
+        </div>
+    </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/patients.js"></script>
+    <script src="js/doctors.js"></script>
+    <script src="js/appointments.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
